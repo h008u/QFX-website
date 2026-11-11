@@ -12,6 +12,7 @@ const base = {
 };
 
 export const demoSignals: Signal[] = [
+  { ...base, id: "d0000000-0000-4000-8000-000000000005", symbol: "XAUUSD", asset_class: "gold", direction: "BUY", entry_price: 2650, stop_loss: 2632, take_profit_1: 2680, take_profit_2: 2700, status: "open", result_pips: null, notes: "شراء من منطقة طلب على إطار الساعة", opened_at: h(1), closed_at: null, created_at: h(1), updated_at: h(1) },
   { ...base, id: "d0000000-0000-4000-8000-000000000001", symbol: "USOIL", asset_class: "oil", direction: "SELL", entry_price: 78.4, stop_loss: 79.2, take_profit_1: 77, status: "open", result_pips: null, notes: "رفض عند مقاومة 78.5", opened_at: h(3), closed_at: null, created_at: h(3), updated_at: h(3) },
   { ...base, id: "d0000000-0000-4000-8000-000000000002", symbol: "GBPUSD", asset_class: "forex", direction: "BUY", entry_price: 1.264, stop_loss: 1.261, take_profit_1: 1.269, take_profit_2: 1.272, status: "tp_hit", result_pips: 50, opened_at: h(26), closed_at: h(20), created_at: h(26), updated_at: h(20) },
   { ...base, id: "d0000000-0000-4000-8000-000000000003", symbol: "EURUSD", asset_class: "forex", direction: "SELL", entry_price: 1.085, stop_loss: 1.088, take_profit_1: 1.081, status: "sl_hit", result_pips: -30, opened_at: h(30), closed_at: h(24), created_at: h(30), updated_at: h(24) },

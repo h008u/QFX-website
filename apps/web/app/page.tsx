@@ -13,15 +13,17 @@ import { Suspense } from "react";
 import { LeadForm } from "@/components/landing/lead-form";
 import { Steps } from "@/components/landing/steps";
 import { SectionHeading } from "@/components/section-heading";
-import { SignalCard } from "@/components/signals/signal-card";
+import { PriceChart } from "@/components/markets/price-chart";
 import { StatsCards } from "@/components/signals/stats-cards";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { siteConfig } from "@/config/site";
 import { getSignalStats, getSignals } from "@/lib/data";
+import { getMarkets } from "@/lib/market-data";
 import { cn } from "@/lib/utils";
+import { CLOSED_STATUSES, DIRECTION_LABEL } from "@qfx/shared";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 const features = [
   { icon: ShieldCheck, title: "وسطاء مرخّصون", text: "نعمل فقط مع شركات وساطة خاضعة لجهات رقابية معروفة، وأموالك تبقى في حسابك لدى الوسيط." },
@@ -33,7 +35,20 @@ const features = [
 ];
 
 export default async function HomePage() {
-  const [{ data: stats, demo }, { data: signals }] = await Promise.all([getSignalStats(), getSignals(3)]);
+  const [{ data: stats, demo }, { data: signals }, markets] = await Promise.all([
+    getSignalStats(),
+    getSignals(20),
+    getMarkets(),
+  ]);
+  const hero = markets.series[0];
+  const heroSignal = signals.find((s) => s.symbol === hero?.symbol.symbol && !CLOSED_STATUSES.includes(s.status));
+  const heroLines = heroSignal
+    ? [
+        { price: Number(heroSignal.entry_price), title: `${DIRECTION_LABEL[heroSignal.direction]}`, kind: "entry" as const },
+        { price: Number(heroSignal.stop_loss), title: "SL", kind: "sl" as const },
+        { price: Number(heroSignal.take_profit_1), title: "TP1", kind: "tp" as const },
+      ]
+    : [];
 
   return (
     <>
@@ -59,16 +74,49 @@ export default async function HomePage() {
             </div>
             <p className="mt-4 text-xs text-muted-foreground">التداول ينطوي على مخاطر عالية وقد تخسر رأس مالك.</p>
           </div>
-          <div className="grid gap-4">
-            {signals.slice(0, 2).map((s) => (
-              <SignalCard key={s.id} signal={s} />
-            ))}
-          </div>
+          {hero && (
+            <Link href="/markets" className="block rounded-lg border border-border bg-card transition-colors hover:border-zinc-600">
+              <div className="flex items-end justify-between border-b border-border p-4">
+                <div>
+                  <p className="num text-lg font-bold">{hero.symbol.symbol}</p>
+                  <p className="text-xs text-muted-foreground">{hero.symbol.name}</p>
+                </div>
+                <div className="text-end">
+                  <p className={cn("num text-xl font-bold", hero.changePct >= 0 ? "text-success" : "text-destructive")}>
+                    {hero.last.toFixed(hero.symbol.digits)}
+                  </p>
+                  <p className={cn("num text-xs", hero.changePct >= 0 ? "text-success" : "text-destructive")}>
+                    {hero.changePct >= 0 ? "+" : ""}
+                    {hero.changePct.toFixed(2)}%
+                  </p>
+                </div>
+              </div>
+              <div className="p-2">
+                <PriceChart candles={hero.candles.slice(-80)} digits={hero.symbol.digits} lines={heroLines} height={300} />
+              </div>
+            </Link>
+          )}
         </div>
       </section>
 
+      {/* ===== Ticker ===== */}
+      <div className="border-b border-border bg-card">
+        <div className="container flex gap-8 overflow-x-auto py-3" dir="ltr">
+          {markets.series.map((m) => (
+            <Link key={m.symbol.symbol} href="/markets" className="num flex shrink-0 items-center gap-2 text-sm">
+              <span className="font-semibold">{m.symbol.symbol}</span>
+              <span>{m.last.toFixed(m.symbol.digits)}</span>
+              <span className={m.changePct >= 0 ? "text-success" : "text-destructive"}>
+                {m.changePct >= 0 ? "+" : ""}
+                {m.changePct.toFixed(2)}%
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* ===== Stats ===== */}
-      <section className="container -mt-10 relative z-10">
+      <section className="container relative z-10 mt-12">
         <StatsCards stats={stats} />
         {demo && <p className="mt-2 text-center text-xs text-gold">أرقام توضيحية — تظهر الأرقام الحقيقية بعد ربط قاعدة البيانات.</p>}
       </section>

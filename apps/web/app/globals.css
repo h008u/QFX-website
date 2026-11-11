@@ -4,26 +4,27 @@
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
-    --card: 222 40% 9%;
-    --card-foreground: 210 40% 96%;
-    --muted: 220 30% 14%;
-    --muted-foreground: 215 18% 65%;
-    --secondary: 220 30% 15%;
-    --secondary-foreground: 210 40% 96%;
-    --accent: 220 30% 15%;
-    --accent-foreground: 210 40% 96%;
-    --primary: 158 64% 45%;
-    --primary-foreground: 222 47% 6%;
-    --destructive: 0 72% 58%;
+    /* مستوحى من واجهات تطبيقات التداول الاحترافية: أسود عميق + حدود رفيعة + أخضر/أحمر صريح */
+    --background: 0 0% 4%; /* #0A0A0A */
+    --foreground: 0 0% 96%;
+    --card: 0 0% 7%; /* #121212 */
+    --card-foreground: 0 0% 96%;
+    --muted: 240 4% 12%;
+    --muted-foreground: 240 5% 62%;
+    --secondary: 240 4% 12%;
+    --secondary-foreground: 0 0% 96%;
+    --accent: 240 4% 12%;
+    --accent-foreground: 0 0% 96%;
+    --primary: 160 84% 39%; /* #10B981 */
+    --primary-foreground: 0 0% 4%;
+    --destructive: 3 100% 59%; /* #FF3B30 */
     --destructive-foreground: 0 0% 100%;
-    --success: 152 60% 48%;
-    --gold: 43 90% 56%;
-    --border: 220 25% 18%;
-    --input: 220 25% 20%;
-    --ring: 158 64% 45%;
-    --radius: 0.75rem;
+    --success: 160 84% 39%; /* #10B981 */
+    --gold: 38 92% 50%;
+    --border: 240 4% 16%; /* #27272A */
+    --input: 240 4% 16%;
+    --ring: 160 84% 39%;
+    --radius: 0.625rem;
   }
 
   * {
@@ -43,7 +44,9 @@
   .num {
     direction: ltr;
     unicode-bidi: isolate;
+    font-family: var(--font-mono), ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -54,6 +57,15 @@
     background-size: 48px 48px;
   }
   .text-gradient {
-    @apply bg-gradient-to-l from-primary via-emerald-300 to-gold bg-clip-text text-transparent;
+    @apply text-primary;
+  }
+  /* شريط سفلي زجاجي (Glassmorphism) */
+  .glass {
+    background: hsl(var(--background) / 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
   }
 }

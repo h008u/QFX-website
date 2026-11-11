@@ -9,8 +9,9 @@ export const siteConfig = {
   telegramUrl: process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL || "https://t.me/",
   nav: [
     { href: "/", label: "الرئيسية" },
-    { href: "/how-it-works", label: "كيف نعمل" },
+    { href: "/markets", label: "الأسواق" },
     { href: "/signals", label: "التوصيات" },
     { href: "/feed", label: "المجتمع والأخبار" },
+    { href: "/how-it-works", label: "كيف نعمل" },
   ],
 };

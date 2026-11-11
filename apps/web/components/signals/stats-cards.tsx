@@ -13,7 +13,7 @@ export function StatsCards({ stats }: { stats: SignalStats }) {
       icon: TrendingUp,
       tone: stats.total_pips >= 0 ? "text-success" : "text-destructive",
     },
-    { label: "صفقات مفتوحة", value: String(stats.open), icon: Activity, tone: "text-gold" },
+    { label: "صفقات مفتوحة", value: String(stats.open), icon: Activity, tone: "text-foreground" },
   ];
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
