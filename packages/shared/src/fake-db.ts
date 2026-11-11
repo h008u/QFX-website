@@ -21,7 +21,7 @@ const DEFAULTS: Record<string, () => Row> = {
   settings: () => ({}),
 };
 const PK: Record<string, string> = { settings: "key", task_runs: "task" };
-const UNIQUE: Record<string, string[]> = { posts: ["external_id"], news: ["external_id"] };
+const UNIQUE: Record<string, string[]> = { posts: ["external_id"], news: ["external_id"], signals: ["external_ref"] };
 
 export class FakeDb {
   tables: Record<string, Row[]> = {};

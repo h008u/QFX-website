@@ -13,6 +13,7 @@ import { publishPost } from "./engine/publish";
 import { publishDue, runTick } from "./engine/tick";
 import { postWeekly } from "./engine/weekly";
 import { postOutlook } from "./engine/outlook";
+import { handleMt5Event, type Mt5Event } from "./engine/mt5";
 import { runViews } from "./engine/views";
 import { runAgenda, runEventAlerts, syncCalendar } from "./services/calendar";
 import { db } from "./supabase";
@@ -122,6 +123,18 @@ export function createApp() {
       settings,
     );
     return c.json({ ok: true, outcome: r.outcome }, 201);
+  });
+
+  // ===== جسر MT5 (إضافة QFXBridge.mq5) =====
+  // الرابط: POST {PUBLIC_URL}/mt5/{MT5_SECRET} — الإضافة ترسل JSON لكل حدث بالحساب
+  app.post("/mt5/:secret", async (c) => {
+    const secret = process.env.MT5_SECRET ?? "";
+    if (!secret || !safeEqual(c.req.param("secret"), secret)) return c.json({ ok: false, error: "unauthorized" }, 401);
+    const e = (await c.req.json().catch(() => null)) as Mt5Event | null;
+    if (!e?.type) return c.json({ ok: false, error: "bad_json" }, 400);
+    if (e.type === "ping") return c.json({ ok: true, pong: true });
+    const r = await handleMt5Event(e, await loadSettings());
+    return c.json(r);
   });
 
   // ===== واجهة API الخاصة (لوحة التحكم + المهام الدورية) =====

@@ -31,5 +31,7 @@ services:
         sync: false
       - key: SITE_URL
         sync: false
+      - key: MT5_SECRET
+        generateValue: true
       - key: TWELVEDATA_API_KEY
         sync: false

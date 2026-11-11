@@ -108,7 +108,7 @@ export async function findSignal(idOrPrefix: string): Promise<Signal | null> {
 }
 
 /** يحدّث حالة التوصية (تحقق الهدف / ضرب الوقف / إغلاق) ويرد على رسالتها في القناة */
-export async function updateSignal(idOrPrefix: string, update: SignalUpdateInput): Promise<Signal> {
+export async function updateSignal(idOrPrefix: string, update: SignalUpdateInput, opts: { publish?: boolean } = {}): Promise<Signal> {
   const signal = await findSignal(idOrPrefix);
   if (!signal) throw new ValidationError(["التوصية غير موجودة"]);
 
@@ -116,10 +116,10 @@ export async function updateSignal(idOrPrefix: string, update: SignalUpdateInput
   if (resultPips === null && update.exit_price) {
     resultPips = calcPips(signal.symbol, signal.direction, Number(signal.entry_price), update.exit_price);
   }
-  if (resultPips === null && update.status === "tp_hit") {
+  if (resultPips === null && update.status === "tp_hit" && signal.take_profit_1) {
     resultPips = calcPips(signal.symbol, signal.direction, Number(signal.entry_price), Number(signal.take_profit_1));
   }
-  if (resultPips === null && update.status === "sl_hit") {
+  if (resultPips === null && update.status === "sl_hit" && signal.stop_loss) {
     resultPips = calcPips(signal.symbol, signal.direction, Number(signal.entry_price), Number(signal.stop_loss));
   }
 
@@ -132,6 +132,7 @@ export async function updateSignal(idOrPrefix: string, update: SignalUpdateInput
   const { data, error } = await db().from("signals").update(patch).eq("id", signal.id).select().single<Signal>();
   if (error) throw error;
 
+  if (opts.publish === false) return data;
   try {
     await publishSignalPost(
       data.id,
@@ -143,4 +144,48 @@ export async function updateSignal(idOrPrefix: string, update: SignalUpdateInput
     console.error("[signals] telegram update failed", err);
   }
   return data;
+}
+
+/** توصية من مصدر خارجي (MT5 أو بوت استراتيجية) — الوقف والهدف اختياريان، والنشر اختياري */
+export async function createExternalSignal(
+  row: {
+    symbol: string;
+    direction: "BUY" | "SELL";
+    entry_price: number;
+    stop_loss: number | null;
+    take_profit_1: number | null;
+    take_profit_2?: number | null;
+    notes?: string | null;
+    source: "mt5" | "strategy";
+    external_ref: string;
+    strategy?: string | null;
+    meta?: Record<string, unknown> | null;
+  },
+  publish: boolean,
+): Promise<Signal | null> {
+  const symbol = normalizeSymbol(row.symbol);
+  const { data, error } = await db()
+    .from("signals")
+    .insert({ ...row, symbol, asset_class: detectAssetClass(symbol), status: "open", take_profit_2: row.take_profit_2 ?? null })
+    .select()
+    .single<Signal>();
+  if (error) {
+    if (error.code === "23505") return null; // وصلت مرتين
+    throw error;
+  }
+  if (publish) {
+    try {
+      const post = await publishSignalPost(data.id, formatSignalMessage({ ...data, id: data.id }, getEnv().siteUrl), null, `${row.direction} ${symbol}`);
+      const messageId = firstMessageId(post);
+      if (messageId) await db().from("signals").update({ telegram_message_id: messageId }).eq("id", data.id);
+    } catch (err) {
+      console.error("[signals] external publish failed", err);
+    }
+  }
+  return data;
+}
+
+/** منشور تحديث كرد على رسالة التوصية (تعديل وقف/هدف، إغلاق جزئي...) */
+export async function postSignalNote(signal: Pick<Signal, "id" | "symbol" | "direction">, html: string) {
+  return publishSignalPost(signal.id, html, await openingPostId(signal.id), `تحديث ${signal.symbol}`);
 }

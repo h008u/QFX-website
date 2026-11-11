@@ -19,6 +19,8 @@ let m: {
   createSignal: typeof import("../services/signals").createSignal;
   updateSignal: typeof import("../services/signals").updateSignal;
   setDb: typeof import("../supabase").setDbForTests;
+  handleMt5Event: typeof import("./mt5").handleMt5Event;
+  baseSymbol: typeof import("./mt5").baseSymbol;
 };
 
 before(async () => {
@@ -43,6 +45,7 @@ before(async () => {
     invalidate: (await import("./config")).invalidateSettings,
     ...(await import("../services/signals")),
     setDb: (await import("../supabase")).setDbForTests,
+    ...(await import("./mt5")),
   } as typeof m;
 });
 
@@ -223,4 +226,56 @@ test("tick lock prevents concurrent runs and records task results", async () => 
   const run = fake.t("task_runs").find((r) => r.task === "publish_due");
   assert.equal(run?.ok, true);
   assert.equal(fake.t("task_runs").find((r) => r.task === "_tick_lock")?.last_run_at, null, "lock released");
+});
+
+test("mt5: symbol normalization", () => {
+  assert.equal(m.baseSymbol("XAUUSDm"), "XAUUSD");
+  assert.equal(m.baseSymbol("EURUSD.pro"), "EURUSD");
+  assert.equal(m.baseSymbol("GOLD#"), "XAUUSD");
+  assert.equal(m.baseSymbol("US30"), "US30");
+});
+
+test("mt5: open → modify → partial → close flows into signals and threaded posts", async () => {
+  twoDestinations();
+  setting("mt5", { enabled: true });
+  const s = await m.loadSettings(true);
+  await m.handleMt5Event({ type: "account", balance: 1000, equity: 1010 }, s);
+  assert.equal(fake.t("settings").find((r) => r.key === "state.mt5")?.value.account.balance, 1000);
+
+  await m.handleMt5Event({ type: "open", ticket: 77, symbol: "XAUUSDm", side: "buy", price: 2650, sl: 0, tp: 0, volume: 0.1 }, s);
+  const sig = fake.t("signals").find((x) => x.external_ref === "mt5:77")!;
+  assert.equal(sig.symbol, "XAUUSD");
+  assert.equal(sig.stop_loss, null);
+  assert.equal(sig.source, "mt5");
+  const opening = tg.sends();
+  assert.equal(opening.length, 2);
+  assert.doesNotMatch(opening[0].params.text, /وقف الخسارة/, "no empty SL line");
+
+  // نفس الحدث مرتين لا ينشئ توصية ثانية
+  await m.handleMt5Event({ type: "open", ticket: 77, symbol: "XAUUSDm", side: "buy", price: 2650 }, s);
+  assert.equal(fake.t("signals").filter((x) => x.external_ref === "mt5:77").length, 1);
+
+  tg.reset();
+  await m.handleMt5Event({ type: "modify", ticket: 77, symbol: "XAUUSDm", sl: 2650, tp: 2680 }, s);
+  const mod = tg.sends();
+  assert.equal(mod.length, 2);
+  assert.match(mod[0].params.text, /بدون مخاطرة/);
+  assert.ok(mod[0].params.reply_parameters?.message_id, "threaded under the opening message");
+
+  tg.reset();
+  await m.handleMt5Event({ type: "close", ticket: 77, symbol: "XAUUSDm", side: "buy", price: 2665, partial: true, reason: "manual" }, s);
+  assert.match(tg.sends()[0].params.text, /إغلاق جزئي/);
+  assert.equal(fake.t("signals").find((x) => x.id === sig.id)!.status, "open");
+
+  await m.handleMt5Event({ type: "close", ticket: 77, symbol: "XAUUSDm", side: "buy", price: 2680, reason: "tp" }, s);
+  const closed = fake.t("signals").find((x) => x.id === sig.id)!;
+  assert.equal(closed.status, "tp_hit");
+  assert.equal(closed.result_pips, 300);
+});
+
+test("mt5: disabled in panel → trades ignored", async () => {
+  const s = await m.loadSettings(true);
+  const r = await m.handleMt5Event({ type: "open", ticket: 9, symbol: "EURUSD", side: "sell", price: 1.08 }, s);
+  assert.match(r.note ?? "", /مطفي/);
+  assert.equal(fake.t("signals").length, 0);
 });
