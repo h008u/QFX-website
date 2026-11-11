@@ -3,8 +3,32 @@
 @tailwind utilities;
 
 @layer base {
+  /* الوضع الفاتح (الافتراضي): أبيض نظيف + حدود رمادية رفيعة + أخضر/أحمر صريح */
   :root {
-    /* مستوحى من واجهات تطبيقات التداول الاحترافية: أسود عميق + حدود رفيعة + أخضر/أحمر صريح */
+    --background: 220 20% 98%; /* #F8F9FB */
+    --foreground: 240 10% 4%; /* #09090B */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 4% 42%;
+    --secondary: 240 5% 94%; /* #EEEEF0 */
+    --secondary-foreground: 240 10% 4%;
+    --accent: 240 5% 94%;
+    --accent-foreground: 240 10% 4%;
+    --primary: 161 94% 30%; /* #059669 — أغمق قليلاً ليقرأ على الأبيض */
+    --primary-foreground: 0 0% 100%;
+    --destructive: 3 78% 50%; /* #E2362B */
+    --destructive-foreground: 0 0% 100%;
+    --success: 161 94% 30%;
+    --gold: 32 95% 40%;
+    --border: 240 6% 90%; /* #E4E4E7 */
+    --input: 240 6% 86%;
+    --ring: 161 94% 30%;
+    --radius: 0.625rem;
+  }
+
+  /* الوضع الداكن (اختياري): أسود عميق بأسلوب تطبيقات التداول */
+  .dark {
     --background: 0 0% 4%; /* #0A0A0A */
     --foreground: 0 0% 96%;
     --card: 0 0% 7%; /* #121212 */
@@ -19,12 +43,11 @@
     --primary-foreground: 0 0% 4%;
     --destructive: 3 100% 59%; /* #FF3B30 */
     --destructive-foreground: 0 0% 100%;
-    --success: 160 84% 39%; /* #10B981 */
+    --success: 160 84% 39%;
     --gold: 38 92% 50%;
     --border: 240 4% 16%; /* #27272A */
     --input: 240 4% 16%;
     --ring: 160 84% 39%;
-    --radius: 0.625rem;
   }
 
   * {
@@ -32,8 +55,12 @@
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: light;
     scroll-behavior: smooth;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   body {

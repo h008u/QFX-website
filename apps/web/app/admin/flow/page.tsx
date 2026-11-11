@@ -65,7 +65,7 @@ export default async function FlowPage({ searchParams }: { searchParams: Promise
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1.3fr]">
         {stages.map((st, i) => (
           <div key={st.label} className="contents">
-            <Link href={st.href} className="rounded-lg border border-border bg-card p-4 hover:border-zinc-600">
+            <Link href={st.href} className="rounded-lg border border-border bg-card p-4 hover:border-zinc-400 dark:hover:border-zinc-600">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <st.icon className="h-4 w-4 text-primary" /> {st.label}
               </div>

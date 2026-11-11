@@ -76,7 +76,7 @@ export function PolicySection({ initial, scores, canEdit }: { initial: BotSettin
                   <div className="flex h-16 items-end gap-1" dir="ltr">
                     {buckets.map((n, i) => {
                       const mid = i * 10 + 5;
-                      const tone = mid >= r.auto ? "bg-success" : mid >= r.approve ? "bg-primary/60" : "bg-zinc-600";
+                      const tone = mid >= r.auto ? "bg-success" : mid >= r.approve ? "bg-primary/60" : "bg-zinc-300 dark:bg-zinc-600";
                       return <div key={i} className={cn("flex-1 rounded-t", tone)} style={{ height: `${(n / max) * 100}%`, minHeight: n ? 3 : 1 }} title={`${i * 10}–${i * 10 + 9}: ${n}`} />;
                     })}
                   </div>

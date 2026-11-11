@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { siteConfig } from "@/config/site";
 import { useUser } from "@/lib/use-user";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {user !== undefined && (
             <Link href={account.href} className={buttonVariants({ variant: "ghost", size: "sm" })}>
               <UserRound className="h-4 w-4" /> {account.label}
@@ -57,9 +59,12 @@ export function SiteHeader() {
             افتح حسابك
           </Link>
         </div>
-        <button className="md:hidden" aria-label="القائمة" onClick={() => setOpen((v) => !v)}>
-          {open ? <X /> : <Menu />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button aria-label="القائمة" onClick={() => setOpen((v) => !v)} className="p-2">
+            {open ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
       {open && (
         <nav className="container flex flex-col gap-1 pb-4 md:hidden">

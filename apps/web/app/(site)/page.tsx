@@ -75,7 +75,7 @@ export default async function HomePage() {
             <p className="mt-4 text-xs text-muted-foreground">التداول ينطوي على مخاطر عالية وقد تخسر رأس مالك.</p>
           </div>
           {hero && (
-            <Link href="/markets" className="block rounded-lg border border-border bg-card transition-colors hover:border-zinc-600">
+            <Link href="/markets" className="block rounded-lg border border-border bg-card transition-colors hover:border-zinc-400 dark:hover:border-zinc-600">
               <div className="flex items-end justify-between border-b border-border p-4">
                 <div>
                   <p className="num text-lg font-bold">{hero.symbol.symbol}</p>

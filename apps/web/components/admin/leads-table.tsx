@@ -7,8 +7,8 @@ import { useAction } from "./ui";
 
 export const LEAD_STATUS: Record<string, { label: string; tone: string }> = {
   new: { label: "جديد", tone: "bg-primary/15 text-primary" },
-  contacted: { label: "تم التواصل", tone: "bg-sky-500/15 text-sky-400" },
-  registered: { label: "سجّل حساباً", tone: "bg-violet-500/15 text-violet-300" },
+  contacted: { label: "تم التواصل", tone: "bg-sky-500/15 text-sky-600 dark:text-sky-400" },
+  registered: { label: "سجّل حساباً", tone: "bg-violet-500/15 text-violet-700 dark:text-violet-300" },
   verified: { label: "مرتبط بالوكالة", tone: "bg-gold/15 text-gold" },
   funded: { label: "أودع ✅", tone: "bg-success/15 text-success" },
   rejected: { label: "مرفوض", tone: "bg-muted text-muted-foreground" },

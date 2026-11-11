@@ -19,7 +19,7 @@ export interface CalItem {
 }
 
 const TONE: Record<CalItem["type"], string> = {
-  scheduled: "bg-sky-500/15 text-sky-300 border-sky-500/30",
+  scheduled: "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30",
   published: "bg-secondary text-muted-foreground border-transparent",
   recurring: "bg-primary/10 text-primary border-primary/20",
   event: "bg-destructive/10 text-destructive border-destructive/20",
@@ -73,7 +73,7 @@ export function ContentCalendar({
           <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-sky-500/60" /> مجدول (اسحبه ليوم آخر)</span>
           <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-primary/60" /> مواعيد ثابتة</span>
           <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-destructive/60" /> خبر قوي</span>
-          <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-zinc-600" /> نُشر</span>
+          <span className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-zinc-300 dark:bg-zinc-600" /> نُشر</span>
         </div>
       </div>
       <ActionMessage result={move.result ?? cancel.result} className="mb-3" />

@@ -4,6 +4,7 @@ import { Bell, ExternalLink, Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
 import { ADMIN_NAV } from "./nav";
@@ -150,6 +151,7 @@ export function AdminShell({
             </Link>
           )}
           <div className="ms-auto flex items-center gap-2">
+            <ThemeToggle />
             <button onClick={() => setPaletteOpen(true)} className="rounded-md p-2 text-muted-foreground hover:bg-secondary lg:hidden" aria-label="بحث">
               <Search className="h-5 w-5" />
             </button>

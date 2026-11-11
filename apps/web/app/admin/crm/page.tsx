@@ -42,7 +42,7 @@ export default async function CrmPage({ searchParams }: { searchParams: Promise<
       />
       <div className="mb-6 grid grid-cols-3 gap-2 md:grid-cols-6">
         {funnel.map(({ k, n }) => (
-          <Link key={k} href={status === k ? "/admin/crm" : `/admin/crm?status=${k}`} className={cn("rounded-lg border bg-card p-3 text-center", status === k ? "border-primary" : "border-border hover:border-zinc-600")}>
+          <Link key={k} href={status === k ? "/admin/crm" : `/admin/crm?status=${k}`} className={cn("rounded-lg border bg-card p-3 text-center", status === k ? "border-primary" : "border-border hover:border-zinc-400 dark:hover:border-zinc-600")}>
             <p className="num text-2xl font-bold">{n}</p>
             <p className="mt-1 text-xs text-muted-foreground">{LEAD_STATUS[k].label}</p>
           </Link>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic, JetBrains_Mono } from "next/font/google";
 import { siteConfig } from "@/config/site";
+import { THEME_INIT_SCRIPT } from "@/lib/theme-script";
 import "./globals.css";
 
 const font = IBM_Plex_Sans_Arabic({
@@ -20,11 +21,14 @@ export const metadata: Metadata = {
   openGraph: { title: siteConfig.title, description: siteConfig.description, locale: "ar_AR", type: "website" },
 };
 
-export const viewport: Viewport = { themeColor: "#0A0A0A", viewportFit: "cover" };
+export const viewport: Viewport = { themeColor: "#FFFFFF", viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={`${font.variable} ${mono.variable}`}>
+    <html lang="ar" dir="rtl" className={`${font.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-screen font-sans">{children}</body>
     </html>
   );

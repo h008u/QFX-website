@@ -49,7 +49,7 @@ export default async function OverviewPage() {
     { label: "نُشر اليوم", value: todayRows.filter(isPub).length, icon: Send, tone: "text-success", href: "/admin/flow?status=published" },
     { label: "نُشر خلال 7 أيام", value: rows.filter(isPub).length, icon: CheckCircle2, tone: "text-foreground", href: "/admin/flow" },
     { label: "ينتظر موافقتك", value: rows.filter((r) => r.status === "pending").length, icon: Inbox, tone: "text-primary", href: "/admin/review" },
-    { label: "مجدول", value: (upcoming ?? []).length, icon: Clock, tone: "text-sky-400", href: "/admin/calendar" },
+    { label: "مجدول", value: (upcoming ?? []).length, icon: Clock, tone: "text-sky-600 dark:text-sky-400", href: "/admin/calendar" },
     { label: "انفلتر/مكرر اليوم", value: todayRows.filter((r) => r.status === "filtered" || r.status === "duplicate").length, icon: Filter, tone: "text-muted-foreground", href: "/admin/flow?status=filtered" },
     { label: "فشل اليوم", value: todayRows.filter((r) => r.status === "failed" || r.status === "partial").length, icon: XCircle, tone: "text-destructive", href: "/admin/flow?status=failed" },
     { label: "طلبات انضمام (7 أيام)", value: leadsRes.count ?? 0, icon: UserPlus, tone: "text-gold", href: "/admin/crm" },
@@ -90,7 +90,7 @@ export default async function OverviewPage() {
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
         {kpis.map((k) => (
-          <Link key={k.label} href={k.href} className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-zinc-600">
+          <Link key={k.label} href={k.href} className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-zinc-400 dark:hover:border-zinc-600">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               {k.label}
               <k.icon className={cn("h-4 w-4", k.tone)} />
@@ -106,7 +106,7 @@ export default async function OverviewPage() {
             <h2 className="font-bold">آخر 7 أيام</h2>
             <div className="flex gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-primary" /> نُشر</span>
-              <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-zinc-600" /> لم يُنشر</span>
+              <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-zinc-300 dark:bg-zinc-600" /> لم يُنشر</span>
             </div>
           </div>
           <div className="flex h-44 items-end gap-3" dir="ltr">
@@ -115,7 +115,7 @@ export default async function OverviewPage() {
                 <span className="num text-[11px] text-muted-foreground">{d.published}</span>
                 <div className="flex w-full max-w-10 flex-col-reverse overflow-hidden rounded-t" style={{ height: `${((d.published + d.other) / max) * 130 + 2}px` }}>
                   <div className="bg-primary" style={{ flexGrow: d.published }} />
-                  <div className="bg-zinc-600" style={{ flexGrow: d.other }} />
+                  <div className="bg-zinc-300 dark:bg-zinc-600" style={{ flexGrow: d.other }} />
                 </div>
                 <span className="text-[11px] text-muted-foreground">{d.label}</span>
               </div>
@@ -135,7 +135,7 @@ export default async function OverviewPage() {
           <ul>
             {(upcoming ?? []).map((p) => (
               <li key={p.id} className="flex items-start gap-3 border-b border-border/60 px-5 py-3 text-sm last:border-0">
-                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
                 <div className="min-w-0">
                   <p className="truncate">{p.title || p.body.replace(/[*_`]/g, "").slice(0, 70)}</p>
                   <p className="num text-xs text-muted-foreground">{fmtDateTime(p.scheduled_at, tz)}</p>
