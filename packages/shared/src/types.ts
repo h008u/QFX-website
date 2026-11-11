@@ -5,7 +5,7 @@ export type SignalStatus = "pending" | "open" | "tp_hit" | "sl_hit" | "closed" |
 export type AssetClass = "forex" | "gold" | "oil" | "indices" | "crypto";
 export type NewsKind = "news" | "analysis" | "calendar" | "announcement";
 export type Impact = "low" | "medium" | "high";
-export type SignalSource = "admin" | "telegram" | "tradingview";
+export type SignalSource = "admin" | "telegram" | "tradingview" | "mt5" | "strategy";
 
 export interface Signal {
   id: string;
@@ -13,8 +13,8 @@ export interface Signal {
   asset_class: AssetClass;
   direction: Direction;
   entry_price: number;
-  stop_loss: number;
-  take_profit_1: number;
+  stop_loss: number | null;
+  take_profit_1: number | null;
   take_profit_2: number | null;
   take_profit_3: number | null;
   status: SignalStatus;
@@ -26,6 +26,8 @@ export interface Signal {
   closed_at: string | null;
   created_at: string;
   updated_at: string;
+  strategy?: string | null;
+  external_ref?: string | null;
 }
 
 export interface SignalInput {

@@ -28,7 +28,8 @@ export function calcPips(symbol: string, direction: Direction, entry: number, ex
 }
 
 /** نسبة العائد إلى المخاطرة بالنسبة للهدف الأول */
-export function riskReward(input: Pick<SignalInput, "entry_price" | "stop_loss" | "take_profit_1">): number | null {
+export function riskReward(input: { entry_price: number; stop_loss: number | null; take_profit_1: number | null }): number | null {
+  if (!input.stop_loss || !input.take_profit_1) return null;
   const risk = Math.abs(input.entry_price - input.stop_loss);
   if (risk === 0) return null;
   return Math.round((Math.abs(input.take_profit_1 - input.entry_price) / risk) * 100) / 100;

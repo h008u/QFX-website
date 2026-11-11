@@ -11,20 +11,24 @@ const num = (n: number | null | undefined) =>
   n === null || n === undefined ? "" : String(Number(n.toFixed(5)));
 
 /** رسالة التوصية الجديدة لقناة تيليجرام */
-export function formatSignalMessage(signal: SignalInput & { id?: string }, siteUrl?: string): string {
+export function formatSignalMessage(
+  signal: Omit<SignalInput, "stop_loss" | "take_profit_1"> & { stop_loss: number | null; take_profit_1: number | null; id?: string; strategy?: string | null },
+  siteUrl?: string,
+): string {
   const arrow = signal.direction === "BUY" ? "🟢" : "🔴";
   const lines: (string | undefined)[] = [
     `${arrow} <b>توصية جديدة — ${DIRECTION_LABEL[signal.direction]} ${escapeHtml(signal.symbol)}</b>`,
     signal.asset_class ? `📂 ${ASSET_LABEL[signal.asset_class]}` : undefined,
     "",
     `💰 الدخول: <code>${num(signal.entry_price)}</code>`,
-    `🛑 وقف الخسارة: <code>${num(signal.stop_loss)}</code>`,
-    `🎯 الهدف 1: <code>${num(signal.take_profit_1)}</code>`,
+    signal.stop_loss ? `🛑 وقف الخسارة: <code>${num(signal.stop_loss)}</code>` : undefined,
+    signal.take_profit_1 ? `🎯 الهدف 1: <code>${num(signal.take_profit_1)}</code>` : undefined,
     signal.take_profit_2 ? `🎯 الهدف 2: <code>${num(signal.take_profit_2)}</code>` : undefined,
     signal.take_profit_3 ? `🎯 الهدف 3: <code>${num(signal.take_profit_3)}</code>` : undefined,
   ];
   const rr = riskReward(signal);
   if (rr) lines.push(`⚖️ العائد/المخاطرة: 1:${rr}`);
+  if (signal.strategy) lines.push(`🤖 الاستراتيجية: ${escapeHtml(signal.strategy)}`);
   if (signal.notes) lines.push("", `📝 ${escapeHtml(signal.notes)}`);
   if (signal.id) lines.push("", `🆔 <code>${signal.id.slice(0, 8)}</code>`);
   if (siteUrl) lines.push(`📊 سجل الأداء: ${siteUrl}/signals`);

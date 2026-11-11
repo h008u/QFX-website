@@ -3,7 +3,7 @@ import { DEFAULT_POST_TEMPLATES, type PostTemplate } from "./markup";
 
 export type PostKind =
   | "manual" | "news" | "agenda" | "event_alert" | "event_result" | "tradingview" | "signal"
-  | "greeting" | "weekly" | "outlook" | "price_alert";
+  | "greeting" | "weekly" | "outlook" | "price_alert" | "mt5";
 
 export type PostStatus =
   | "draft" | "pending" | "scheduled" | "publishing" | "published" | "partial" | "failed" | "rejected" | "filtered" | "duplicate";
@@ -20,6 +20,7 @@ export const POST_KIND_LABEL: Record<PostKind, string> = {
   weekly: "ملخص الأسبوع والاستطلاع",
   outlook: "نظرة الأسبوع",
   price_alert: "تنبيهات الأسعار",
+  mt5: "صفقات MT5",
 };
 
 export const POST_STATUS_LABEL: Record<PostStatus, string> = {
@@ -43,7 +44,18 @@ export interface Destination {
   label: string;
   kinds: PostKind[] | "all";
   enabled: boolean;
+  /** لغة هذا المكان (فارغ = العربية الأصلية). المنشورات تُترجم تلقائياً مع الحفاظ على التنسيق */
+  lang?: string | null;
 }
+
+export const DESTINATION_LANGS: Record<string, string> = {
+  en: "English",
+  ku: "Kurdî",
+  tr: "Türkçe",
+  fa: "فارسی",
+  fr: "Français",
+  ur: "اردو",
+};
 
 export type PolicyMode = "auto" | "approval" | "score";
 export interface PolicyRule {
@@ -110,8 +122,37 @@ export interface BotSettings {
     poll: { enabled: boolean; symbol: string; name: string };
   };
   tradingview: { enabled: boolean };
+  outlook: { enabled: boolean; day: number; time: string };
+  event_results: { enabled: boolean };
+  views: { enabled: boolean };
+  mt5: {
+    enabled: boolean;
+    publish_open: boolean;
+    publish_modify: boolean;
+    publish_close: boolean;
+    symbols: string[]; // فارغ = الكل
+  };
+  strategies: {
+    enabled: boolean;
+    symbols: string[];
+    timeframe: "15min" | "1h" | "4h";
+    list: StrategyConfig[];
+  };
   templates: PostTemplate[];
   holidays: { date: string; name: string }[]; // MM-DD
+}
+
+export interface StrategyConfig {
+  id: string; // ema_cross | rsi_rebound | macd_momentum | pivot_breakout | bollinger | trend_pullback
+  enabled: boolean;
+  stop: "atr" | "fixed";
+  atr_mult: number;
+  fixed_pips: number;
+  tp1_r: number; // الهدف الأول بمضاعف المخاطرة
+  tp2_r: number;
+  max_per_day: number;
+  avoid_news_min: number; // تجنّب الإشارات قبل الأخبار القوية لعملات الرمز بعدد دقائق (0 = بدون)
+  sessions: ("asia" | "london" | "newyork")[]; // فارغ = كل الجلسات
 }
 
 export const DEFAULT_SETTINGS: BotSettings = {
@@ -186,6 +227,27 @@ export const DEFAULT_SETTINGS: BotSettings = {
     poll: { enabled: true, symbol: "XAUUSD", name: "الذهب" },
   },
   tradingview: { enabled: true },
+  outlook: { enabled: true, day: 0, time: "10:00" },
+  event_results: { enabled: true },
+  views: { enabled: true },
+  mt5: { enabled: false, publish_open: true, publish_modify: true, publish_close: true, symbols: [] },
+  strategies: {
+    enabled: false,
+    symbols: ["XAUUSD", "EURUSD"],
+    timeframe: "1h",
+    list: (["ema_cross", "rsi_rebound", "macd_momentum", "pivot_breakout", "bollinger", "trend_pullback"] as const).map((id) => ({
+      id,
+      enabled: id === "ema_cross" || id === "trend_pullback",
+      stop: "atr" as const,
+      atr_mult: 1.5,
+      fixed_pips: 30,
+      tp1_r: 1,
+      tp2_r: 2,
+      max_per_day: 3,
+      avoid_news_min: 30,
+      sessions: [],
+    })),
+  },
   templates: DEFAULT_POST_TEMPLATES,
   holidays: [
     { date: "12-25", name: "عيد الميلاد" },
