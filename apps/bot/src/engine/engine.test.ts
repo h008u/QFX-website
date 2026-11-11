@@ -21,6 +21,8 @@ let m: {
   setDb: typeof import("../supabase").setDbForTests;
   handleMt5Event: typeof import("./mt5").handleMt5Event;
   baseSymbol: typeof import("./mt5").baseSymbol;
+  runStrategies: typeof import("./strategies").runStrategies;
+  trackStrategySignals: typeof import("./strategies").trackStrategySignals;
 };
 
 before(async () => {
@@ -46,6 +48,7 @@ before(async () => {
     ...(await import("../services/signals")),
     setDb: (await import("../supabase")).setDbForTests,
     ...(await import("./mt5")),
+    ...(await import("./strategies")),
   } as typeof m;
 });
 
@@ -278,4 +281,53 @@ test("mt5: disabled in panel → trades ignored", async () => {
   const r = await m.handleMt5Event({ type: "open", ticket: 9, symbol: "EURUSD", side: "sell", price: 1.08 }, s);
   assert.match(r.note ?? "", /مطفي/);
   assert.equal(fake.t("signals").length, 0);
+});
+
+test("strategies: fires on a closed candle, then TP1 moves stop to entry and TP2 closes", async () => {
+  const { computeRows, demoBars, STRATEGIES } = await import("@qfx/shared");
+  const all = demoBars("XAUUSD", 1200, 3600_000);
+  const rows = computeRows(all);
+  let idx = -1;
+  for (let i = 260; i < rows.length; i++) if (STRATEGIES.trend.rule(rows[i], rows[i - 1])) { idx = i; break; }
+  assert.ok(idx > 0, "demo data should contain a trend signal");
+  const bars = all.slice(0, idx + 1);
+  const now = new Date((bars.at(-1)![0] + 3600 + 60) * 1000); // بعد إغلاق الشمعة
+  setting("strategies", {
+    enabled: true,
+    symbols: ["XAUUSD"],
+    list: [{ id: "trend", enabled: true, publish: true, tf: "1h", stop: "atr", atr_mult: 1.5, fixed_pips: 30, tp1_r: 1, tp2_r: 2, max_per_day: 3, avoid_news_min: 0, session: "all", confirm: null }],
+  });
+  const s = await m.loadSettings(true);
+  const r = await m.runStrategies(s, now, { candles: async () => bars });
+  assert.equal((r as { created: string[] }).created.length, 1, JSON.stringify(r));
+  const sig = fake.t("signals")[0];
+  assert.equal(sig.source, "strategy");
+  assert.match(sig.strategy, /تقاطع الاتجاه/);
+  assert.match(tg.sends()[0].params.text, /الاستراتيجية/);
+
+  // نفس الشمعة مرة ثانية لا تكرر الإشارة
+  await m.runStrategies(s, now, { candles: async () => bars });
+  assert.equal(fake.t("signals").length, 1);
+
+  const up = sig.direction === "BUY";
+  tg.reset();
+  await m.trackStrategySignals(s, now, new Map([["XAUUSD", Number(sig.take_profit_1) + (up ? 0.01 : -0.01)]]));
+  const afterTp1 = fake.t("signals")[0];
+  assert.equal(afterTp1.stop_loss, Number(sig.entry_price), "stop moved to entry");
+  assert.equal(afterTp1.meta.tp1_hit, true);
+  assert.match(tg.sends()[0].params.text, /الهدف الأول/);
+
+  await m.trackStrategySignals(s, now, new Map([["XAUUSD", Number(sig.take_profit_2) + (up ? 0.01 : -0.01)]]));
+  const done = fake.t("signals")[0];
+  assert.equal(done.status, "tp_hit");
+  assert.ok(Number(done.result_pips) > 0);
+});
+
+test("strategies: back to entry after TP1 closes at TP1 profit (not a loss)", async () => {
+  fake.t("signals").push({ id: "5e1f0000-0000-4000-8000-000000000001", symbol: "EURUSD", direction: "BUY", entry_price: 1.08, stop_loss: 1.08, take_profit_1: 1.082, take_profit_2: 1.084, status: "open", source: "strategy", meta: { strategy_id: "trend", tf: "1h", tp1_hit: true, bar_time: Math.floor(Date.now() / 1000) }, result_pips: null });
+  const s = await m.loadSettings(true);
+  await m.trackStrategySignals(s, new Date(), new Map([["EURUSD", 1.0799]]));
+  const r = fake.t("signals")[0];
+  assert.equal(r.status, "closed");
+  assert.equal(r.result_pips, 20);
 });

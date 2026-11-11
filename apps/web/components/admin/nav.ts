@@ -1,5 +1,5 @@
 import {
-  Activity, BarChart3, Bell, CandlestickChart, MessagesSquare, CalendarDays, DatabaseBackup, FileClock, GitBranch, Home, Image, Inbox, LineChart,
+  Activity, BarChart3, Bell, Bot, CandlestickChart, MessagesSquare, CalendarDays, DatabaseBackup, FileClock, GitBranch, Home, Image, Inbox, LineChart,
   Newspaper, PenSquare, Settings, ShieldCheck, Users, UsersRound, Workflow, type LucideIcon,
 } from "lucide-react";
 
@@ -20,6 +20,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/compose", label: "منشور جديد", icon: PenSquare, group: "النشر", keywords: "post new compose كتابة" },
   { href: "/admin/calendar", label: "تقويم المحتوى", icon: CalendarDays, group: "النشر", keywords: "calendar schedule جدولة" },
   { href: "/admin/signals", label: "التوصيات والأداء", icon: LineChart, group: "النشر", keywords: "signals performance أداء" },
+  { href: "/admin/strategies", label: "بوتات التحليل", icon: Bot, group: "النشر", keywords: "strategies backtest استراتيجيات اختبار" },
   { href: "/admin/mt5", label: "ربط MT5", icon: CandlestickChart, group: "النشر", keywords: "mt5 metatrader منصة صفقات" },
   { href: "/admin/alerts", label: "تنبيهات الأسعار", icon: Bell, group: "النشر", keywords: "price alerts سعر" },
   { href: "/admin/newsroom", label: "غرفة الأخبار والأجندة", icon: Newspaper, group: "الأخبار", keywords: "news agenda calendar أجندة" },

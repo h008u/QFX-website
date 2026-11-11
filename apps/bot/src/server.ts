@@ -15,6 +15,7 @@ import { postWeekly } from "./engine/weekly";
 import { postOutlook } from "./engine/outlook";
 import { handleMt5Event, type Mt5Event } from "./engine/mt5";
 import { runViews } from "./engine/views";
+import { runStrategies } from "./engine/strategies";
 import { runAgenda, runEventAlerts, syncCalendar } from "./services/calendar";
 import { db } from "./supabase";
 import { createNews } from "./services/news";
@@ -205,6 +206,7 @@ export function createApp() {
       weekly: () => postWeekly(s, now, true),
       outlook: () => postOutlook(s, now, true),
       views: () => runViews(s),
+      strategies: () => runStrategies(s, now, { force: true }),
       news: () => runNews(s, now),
       calendar: () => syncCalendar(s),
       alerts: () => runEventAlerts(s, now),

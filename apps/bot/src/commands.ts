@@ -1,5 +1,7 @@
 import { parseSignalCommand, type NewsKind, type SignalUpdateInput } from "@qfx/shared";
-import type { Bot, Context } from "grammy";
+import { InputFile, type Bot, type Context } from "grammy";
+import { renderChartPng } from "./engine/chart";
+import { getCandles } from "./engine/prices";
 import { getEnv } from "./env";
 import { invalidateSettings, loadSettings } from "./engine/config";
 import { publishPost } from "./engine/publish";
@@ -26,6 +28,7 @@ const HELP = [
   "<code>/analysis عنوان التحليل",
   "نص التحليل...</code>",
   "",
+  "<code>/chart XAUUSD 1h</code> — صورة شارت (متاح للجميع)",
   "<code>/pause</code> و <code>/resume</code> — إيقاف/استئناف النشر التلقائي",
   "<code>/status</code> — حالة المهام الآلية",
   "<code>/id</code> — يعرض معرّف حسابك والمحادثة (داخل موضوع مجموعة يعطيك id:topic)",
@@ -66,6 +69,31 @@ export function registerCommands(bot: Bot) {
       { parse_mode: "HTML", link_preview_options: { is_disabled: true } },
     ),
   );
+
+  // صورة شارت لأي رمز: /chart XAUUSD 1h (للجميع، مرة كل دقيقة لكل محادثة)
+  const lastChart = new Map<number, number>();
+  bot.command("chart", async (ctx) => {
+    const [symRaw, tfRaw] = ctx.match.trim().split(/\s+/);
+    const symbol = (symRaw || "XAUUSD").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const tf = ({ "15": "15min", "15m": "15min", "15min": "15min", "1h": "1h", h1: "1h", "60": "1h", "4h": "4h", h4: "4h", "240": "4h" } as const)[
+      (tfRaw || "1h").toLowerCase() as "1h"
+    ];
+    if (!tf) return ctx.reply("الصيغة: /chart XAUUSD 1h (الأطر: 15m و 1h و 4h)");
+    const last = lastChart.get(ctx.chat.id) ?? 0;
+    if (!isAdmin(ctx) && Date.now() - last < 60_000) return;
+    lastChart.set(ctx.chat.id, Date.now());
+    try {
+      await ctx.replyWithChatAction("upload_photo");
+      const bars = await getCandles(symbol, tf, 220);
+      const png = renderChartPng({ symbol, tfLabel: tf.toUpperCase(), bars });
+      await ctx.replyWithPhoto(new InputFile(png, `${symbol}.png`), {
+        caption: `📊 ${symbol} — ${tf}`,
+        reply_parameters: { message_id: ctx.msg.message_id, allow_sending_without_reply: true },
+      });
+    } catch (e) {
+      await ctx.reply(`تعذّر رسم الشارت: ${e instanceof Error ? e.message.slice(0, 120) : "خطأ"}`);
+    }
+  });
 
   bot.command("id", (ctx) => {
     const thread = ctx.msg.message_thread_id;

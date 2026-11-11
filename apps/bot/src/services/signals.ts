@@ -16,7 +16,7 @@ import type { PostRow } from "../engine/types";
 import { db } from "../supabase";
 
 /** ينشئ منشوراً للتوصية وينشره فوراً بكل أماكن النشر التي تقبل التوصيات */
-async function publishSignalPost(signalId: string, html: string, replyToPost: string | null, title: string) {
+async function publishSignalPost(signalId: string, html: string, replyToPost: string | null, title: string, photoUrl: string | null = null) {
   const { data, error } = await db()
     .from("posts")
     .insert({
@@ -26,6 +26,7 @@ async function publishSignalPost(signalId: string, html: string, replyToPost: st
       body: html,
       format: "html",
       reply_to: replyToPost,
+      photo_url: photoUrl,
       external_id: replyToPost ? null : `signal:${signalId}`,
       source: "التوصيات",
       scheduled_at: new Date().toISOString(),
@@ -162,6 +163,7 @@ export async function createExternalSignal(
     meta?: Record<string, unknown> | null;
   },
   publish: boolean,
+  photoUrl: string | null = null,
 ): Promise<Signal | null> {
   const symbol = normalizeSymbol(row.symbol);
   const { data, error } = await db()
@@ -175,7 +177,7 @@ export async function createExternalSignal(
   }
   if (publish) {
     try {
-      const post = await publishSignalPost(data.id, formatSignalMessage({ ...data, id: data.id }, getEnv().siteUrl), null, `${row.direction} ${symbol}`);
+      const post = await publishSignalPost(data.id, formatSignalMessage({ ...data, id: data.id }, getEnv().siteUrl), null, `${row.direction} ${symbol}`, photoUrl);
       const messageId = firstMessageId(post);
       if (messageId) await db().from("signals").update({ telegram_message_id: messageId }).eq("id", data.id);
     } catch (err) {

@@ -135,7 +135,6 @@ export interface BotSettings {
   strategies: {
     enabled: boolean;
     symbols: string[];
-    timeframe: "15min" | "1h" | "4h";
     list: StrategyConfig[];
   };
   templates: PostTemplate[];
@@ -143,16 +142,19 @@ export interface BotSettings {
 }
 
 export interface StrategyConfig {
-  id: string; // ema_cross | rsi_rebound | macd_momentum | pivot_breakout | bollinger | trend_pullback
+  id: string; // trend | rsi | macd | breakout | bollinger | ichimoku | candles | fibpivot | pullback
   enabled: boolean;
-  stop: "atr" | "fixed";
+  publish: boolean; // تنزل بالقناة (أو تبقى خاصة للمتابعة فقط)
+  tf: "15min" | "1h" | "4h";
+  stop: "atr" | "swing" | "pips";
   atr_mult: number;
   fixed_pips: number;
   tp1_r: number; // الهدف الأول بمضاعف المخاطرة
   tp2_r: number;
   max_per_day: number;
-  avoid_news_min: number; // تجنّب الإشارات قبل الأخبار القوية لعملات الرمز بعدد دقائق (0 = بدون)
-  sessions: ("asia" | "london" | "newyork")[]; // فارغ = كل الجلسات
+  avoid_news_min: number; // تجنّب الإشارات قرب الأخبار القوية لعملات الرمز (0 = بدون)
+  session: "all" | "asia" | "london" | "ny" | "overlap";
+  confirm: string | null; // تأكيد من استراتيجية ثانية بنفس الاتجاه
 }
 
 export const DEFAULT_SETTINGS: BotSettings = {
@@ -234,10 +236,14 @@ export const DEFAULT_SETTINGS: BotSettings = {
   strategies: {
     enabled: false,
     symbols: ["XAUUSD", "EURUSD"],
-    timeframe: "1h",
-    list: (["ema_cross", "rsi_rebound", "macd_momentum", "pivot_breakout", "bollinger", "trend_pullback"] as const).map((id) => ({
+    list: ([
+      ["trend", "1h"], ["rsi", "15min"], ["macd", "4h"], ["breakout", "1h"], ["bollinger", "1h"],
+      ["ichimoku", "4h"], ["candles", "1h"], ["fibpivot", "1h"], ["pullback", "1h"],
+    ] as const).map(([id, tf]) => ({
       id,
-      enabled: id === "ema_cross" || id === "trend_pullback",
+      enabled: id === "trend" || id === "pullback",
+      publish: true,
+      tf,
       stop: "atr" as const,
       atr_mult: 1.5,
       fixed_pips: 30,
@@ -245,7 +251,8 @@ export const DEFAULT_SETTINGS: BotSettings = {
       tp2_r: 2,
       max_per_day: 3,
       avoid_news_min: 30,
-      sessions: [],
+      session: "all" as const,
+      confirm: null,
     })),
   },
   templates: DEFAULT_POST_TEMPLATES,

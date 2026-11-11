@@ -28,6 +28,7 @@ await bot.api.setMyCommands([
   { command: "close", description: "تحديث/إغلاق توصية" },
   { command: "news", description: "نشر خبر" },
   { command: "analysis", description: "نشر تحليل" },
+  { command: "chart", description: "صورة شارت: /chart XAUUSD 1h" },
   { command: "pause", description: "إيقاف النشر التلقائي" },
   { command: "resume", description: "استئناف النشر التلقائي" },
   { command: "status", description: "حالة المهام" },

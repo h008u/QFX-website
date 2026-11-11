@@ -26,3 +26,17 @@ export async function getPrices(symbols: string[]): Promise<Map<string, number>>
   }
   return out;
 }
+
+/** شموع تاريخية من Twelve Data (UTC)، من الأقدم للأحدث: [وقت بالثواني، فتح، أعلى، أدنى، إغلاق] */
+export async function getCandles(symbol: string, interval: "15min" | "1h" | "4h", count = 300): Promise<[number, number, number, number, number][]> {
+  const key = getEnv().twelveDataKey;
+  if (!key) throw new Error("أضف TWELVEDATA_API_KEY لتشغيل بوتات التحليل");
+  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(providerSymbol(symbol))}&interval=${interval}&outputsize=${count}&timezone=UTC&apikey=${key}`;
+  const res = await fetchWithTimeout(url, {}, 20_000);
+  const json = (await res.json()) as { status?: string; message?: string; values?: Record<string, string>[] };
+  if (json.status !== "ok" || !json.values) throw new Error(json.message ?? `Twelve Data ${res.status}`);
+  return json.values
+    .map((v) => [Math.floor(Date.parse(`${v.datetime.replace(" ", "T")}Z`) / 1000), Number(v.open), Number(v.high), Number(v.low), Number(v.close)] as [number, number, number, number, number])
+    .filter((b) => b.every(Number.isFinite))
+    .sort((a, b) => a[0] - b[0]);
+}

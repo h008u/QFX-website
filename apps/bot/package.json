@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@supabase/supabase-js": "^2.80.0",
+    "dejavu-fonts-ttf": "^2.37.3",
     "fast-xml-parser": "^5.12.0",
     "grammy": "^1.38.0",
     "hono": "^4.10.0",

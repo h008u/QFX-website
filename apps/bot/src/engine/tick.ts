@@ -8,6 +8,7 @@ import { holidayOf, runGreetings } from "./greetings";
 import { runNews } from "./news";
 import { runOutlook } from "./outlook";
 import { runViews } from "./views";
+import { runStrategies, trackStrategySignals } from "./strategies";
 import { publishPost } from "./publish";
 import { runWeekly } from "./weekly";
 
@@ -84,6 +85,8 @@ function tasks(s: BotSettings): { id: string; everyMin: number; enabled: boolean
     { id: "weekly", everyMin: 0, enabled: s.weekly.enabled, run: runWeekly },
     { id: "outlook", everyMin: 0, enabled: s.outlook.enabled, run: runOutlook },
     { id: "event_results", everyMin: 0, enabled: s.event_results.enabled, run: runEventResults },
+    { id: "strategies", everyMin: 0, enabled: s.strategies.enabled, run: (s, now) => runStrategies(s, now) },
+    { id: "strategy_tracking", everyMin: 4, enabled: s.strategies.enabled, run: (s, now) => trackStrategySignals(s, now) },
     { id: "views", everyMin: 60, enabled: s.views.enabled, run: (s) => runViews(s) },
   ];
 }

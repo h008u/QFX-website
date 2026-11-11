@@ -154,27 +154,29 @@ export function cleanSection<K extends SettingsKey>(key: K, raw: unknown): BotSe
     }
     case "strategies": {
       const st = v as BotSettings["strategies"];
-      const ids = DEFAULT_SETTINGS.strategies.list.map((x) => x.id);
+      const defaults = DEFAULT_SETTINGS.strategies.list;
       return {
         enabled: Boolean(st.enabled),
-        symbols: words(st.symbols).map((x) => x.toUpperCase().replace(/[^A-Z0-9]/g, "")).filter((x) => x.length >= 3).slice(0, 8),
-        timeframe: (["15min", "1h", "4h"] as const).includes(st.timeframe) ? st.timeframe : "1h",
-        list: ids.map((id) => {
-          const c = st.list.find((x) => x.id === id) ?? DEFAULT_SETTINGS.strategies.list.find((x) => x.id === id)!;
+        symbols: words(st.symbols).map((x) => x.toUpperCase().replace(/[^A-Z0-9]/g, "")).filter((x) => x.length >= 3).slice(0, 6),
+        list: defaults.map((d) => {
+          const c = { ...d, ...(st.list.find((x) => x.id === d.id) ?? {}) };
           let tp1 = Math.max(0.3, Math.min(10, Number(c.tp1_r) || 1));
           let tp2 = Math.max(0.3, Math.min(10, Number(c.tp2_r) || 2));
           if (tp2 < tp1) [tp1, tp2] = [tp2, tp1];
           return {
-            id,
+            id: d.id,
             enabled: Boolean(c.enabled),
-            stop: c.stop === "fixed" ? "fixed" : "atr",
+            publish: Boolean(c.publish),
+            tf: (["15min", "1h", "4h"] as const).includes(c.tf) ? c.tf : d.tf,
+            stop: (["atr", "swing", "pips"] as const).includes(c.stop) ? c.stop : "atr",
             atr_mult: Math.max(0.3, Math.min(10, Number(c.atr_mult) || 1.5)),
             fixed_pips: clampInt(c.fixed_pips, 1, 5000, 30),
             tp1_r: tp1,
             tp2_r: tp2,
             max_per_day: clampInt(c.max_per_day, 1, 20, 3),
             avoid_news_min: clampInt(c.avoid_news_min, 0, 240, 30),
-            sessions: (c.sessions ?? []).filter((x) => ["asia", "london", "newyork"].includes(x)),
+            session: (["all", "asia", "london", "ny", "overlap"] as const).includes(c.session) ? c.session : "all",
+            confirm: c.confirm && c.confirm !== d.id && defaults.some((x) => x.id === c.confirm) ? c.confirm : null,
           };
         }),
       } as BotSettings[K];
