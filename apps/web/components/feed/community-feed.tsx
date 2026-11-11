@@ -11,6 +11,7 @@ import {
 } from "@qfx/shared";
 import { BarChart3, CalendarClock, Megaphone, Newspaper } from "lucide-react";
 import { useMemo, useState } from "react";
+import { CommentThread } from "@/components/community/comment-thread";
 import { LiveIndicator } from "@/components/live-indicator";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -67,6 +68,7 @@ function Post({ item }: { item: NewsItem }) {
               المصدر
             </a>
           )}
+          <CommentThread target="news" targetId={item.id} />
         </div>
       </div>
     </Card>

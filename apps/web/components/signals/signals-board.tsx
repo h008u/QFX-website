@@ -47,7 +47,7 @@ export function SignalsBoard({ initial, demo }: { initial: Signal[]; demo: boole
         open.length ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {open.map((s) => (
-              <SignalCard key={s.id} signal={s} />
+              <SignalCard key={s.id} signal={s} withComments />
             ))}
           </div>
         ) : (

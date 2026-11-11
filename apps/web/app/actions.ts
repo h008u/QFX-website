@@ -1,5 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
+import { REF_COOKIE, sanitizeRef } from "@/lib/referral";
 import { getServerClient } from "@/lib/supabase/server";
 
 export interface LeadState {
@@ -33,7 +35,8 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
     phone,
     telegram_username,
     broker_account_id,
-    referral_source: clean(form.get("ref"), 64) || "website",
+    referral_source:
+      sanitizeRef(clean(form.get("ref"), 64)) ?? sanitizeRef((await cookies()).get(REF_COOKIE)?.value) ?? "website",
   });
   if (error) {
     console.error("[lead] insert failed", error.message);

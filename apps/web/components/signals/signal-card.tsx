@@ -1,5 +1,6 @@
 import { ASSET_LABEL, DIRECTION_LABEL, STATUS_LABEL, riskReward, type Signal } from "@qfx/shared";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { CommentThread } from "@/components/community/comment-thread";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn, formatPrice, timeAgo } from "@/lib/utils";
@@ -29,7 +30,7 @@ function Level({ label, value, tone }: { label: string; value: number | null; to
   );
 }
 
-export function SignalCard({ signal }: { signal: Signal }) {
+export function SignalCard({ signal, withComments = false }: { signal: Signal; withComments?: boolean }) {
   const buy = signal.direction === "BUY";
   const rr = riskReward({
     entry_price: Number(signal.entry_price),
@@ -82,6 +83,7 @@ export function SignalCard({ signal }: { signal: Signal }) {
         )}
       </div>
       {signal.notes && <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">{signal.notes}</p>}
+      {withComments && <CommentThread target="signal" targetId={signal.id} />}
     </Card>
   );
 }

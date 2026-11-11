@@ -1,11 +1,12 @@
 "use client";
 
-import { Menu, Send, X } from "lucide-react";
+import { Menu, Send, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
+import { useUser } from "@/lib/use-user";
 import { cn } from "@/lib/utils";
 
 export function Logo() {
@@ -22,6 +23,8 @@ export function Logo() {
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const user = useUser();
+  const account = user ? { href: "/account", label: "حسابي" } : { href: "/login", label: "دخول" };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
@@ -42,6 +45,11 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
+          {user !== undefined && (
+            <Link href={account.href} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+              <UserRound className="h-4 w-4" /> {account.label}
+            </Link>
+          )}
           <a href={siteConfig.telegramUrl} target="_blank" rel="noopener" className={buttonVariants({ variant: "outline", size: "sm" })}>
             <Send className="h-4 w-4" /> تيليجرام
           </a>
@@ -60,6 +68,9 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <Link href={account.href} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 hover:bg-secondary">
+            {account.label}
+          </Link>
           <Link href="/#join" onClick={() => setOpen(false)} className={cn(buttonVariants(), "mt-2")}>
             افتح حسابك
           </Link>

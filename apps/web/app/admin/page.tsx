@@ -43,8 +43,35 @@ async function getLeads(): Promise<Lead[] | null> {
   return data as Lead[];
 }
 
+interface Member {
+  id: string;
+  full_name: string | null;
+  telegram_username: string | null;
+  role: string;
+  referral_code: string | null;
+  referred_by: string | null;
+  created_at: string;
+}
+
+async function getMembers(): Promise<Member[] | null> {
+  const sb = getServiceClient();
+  if (!sb) return null;
+  const { data, error } = await sb
+    .from("profiles")
+    .select("id, full_name, telegram_username, role, referral_code, referred_by, created_at")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) {
+    console.error("[admin] members", error.message);
+    return [];
+  }
+  return data as Member[];
+}
+
 export default async function AdminPage() {
-  const [{ data: signals }, leads] = await Promise.all([getSignals(100), getLeads()]);
+  const [{ data: signals }, leads, members] = await Promise.all([getSignals(100), getLeads(), getMembers()]);
+  const referralCounts = new Map<string, number>();
+  members?.forEach((m) => m.referred_by && referralCounts.set(m.referred_by, (referralCounts.get(m.referred_by) ?? 0) + 1));
   const active = signals.filter((s) => !CLOSED_STATUSES.includes(s.status));
 
   return (
@@ -129,6 +156,50 @@ export default async function AdminPage() {
           )}
         </CardContent>
       </Card>
+
+      {members && (
+        <Card>
+          <CardHeader>
+            <CardTitle>🧑‍🤝‍🧑 الأعضاء المسجّلون ({members.length})</CardTitle>
+            <CardDescription>أعضاء الموقع وكود الإحالة الذي جاؤوا عبره، وعدد من أحالهم كل عضو.</CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full min-w-[700px] text-sm">
+              <thead className="border-b border-border text-muted-foreground">
+                <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-start [&>th]:font-medium">
+                  <th>التاريخ</th>
+                  <th>الاسم</th>
+                  <th>تيليجرام</th>
+                  <th>كوده</th>
+                  <th>أحاله</th>
+                  <th>إحالاته</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((m) => (
+                  <tr key={m.id} className="border-b border-border/60 last:border-0 [&>td]:px-3 [&>td]:py-2">
+                    <td className="text-muted-foreground">{formatDateTime(m.created_at)}</td>
+                    <td className="font-semibold">
+                      {m.full_name ?? "—"} {m.role === "admin" && <Badge variant="info">مدير</Badge>}
+                    </td>
+                    <td className="num">{m.telegram_username ? `@${m.telegram_username}` : "—"}</td>
+                    <td className="num">{m.referral_code ?? "—"}</td>
+                    <td className="num">{m.referred_by ?? "—"}</td>
+                    <td className="num">{(m.referral_code && referralCounts.get(m.referral_code)) || 0}</td>
+                  </tr>
+                ))}
+                {!members.length && (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                      لا يوجد أعضاء بعد.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
