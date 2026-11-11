@@ -16,6 +16,8 @@ import { runAgenda, runEventAlerts, syncCalendar } from "./services/calendar";
 import { db } from "./supabase";
 import { createNews } from "./services/news";
 import { ValidationError, createSignal, updateSignal } from "./services/signals";
+import { intake } from "./engine/intake";
+import { validateSignalInput } from "@qfx/shared";
 import { getBot } from "./telegram";
 
 const toNum = (v: unknown): number | undefined => {
@@ -89,16 +91,35 @@ export function createApp() {
     const secret = c.req.query("secret") ?? (typeof body?.secret === "string" ? body.secret : "");
     if (!safeEqual(secret, env.tradingViewSecret)) return c.json({ ok: false, error: "unauthorized" }, 401);
 
-    let input: SignalInput;
+    const settings = await loadSettings();
+    if (!settings.tradingview.enabled) return c.json({ ok: false, error: "tradingview_disabled_in_panel" }, 403);
+
+    let input: SignalInput | null = null;
     if (body) {
       input = signalFromBody(body, "tradingview");
     } else {
       const parsed = parseSignalCommand(raw);
-      if (!parsed.ok) return c.json({ ok: false, errors: [parsed.error] }, 400);
-      input = { ...parsed.value, source: "tradingview" };
+      if (parsed.ok) input = { ...parsed.value, source: "tradingview" };
     }
-    const signal = await createSignal(input);
-    return c.json({ ok: true, signal }, 201);
+    // تنبيه كامل (اتجاه + دخول + وقف + هدف) ← توصية. غير ذلك ← منشور تنبيه يمر على سياسة النشر
+    if (input && !validateSignalInput(input).length) {
+      const signal = await createSignal(input);
+      return c.json({ ok: true, signal }, 201);
+    }
+    const title = typeof body?.title === "string" ? body.title : "تنبيه TradingView";
+    const text = body ? [body.text, body.message, body.ticker && `الرمز: ${body.ticker}`, body.price && `السعر: ${body.price}`].filter(Boolean).join("\n") : raw;
+    const r = await intake(
+      {
+        kind: "tradingview",
+        title: String(title).slice(0, 200),
+        body: `🔔 **${String(title).slice(0, 200)}**\n\n${String(text).slice(0, 3000)}`,
+        score: 70,
+        policy: "tradingview",
+        disclaimer: true,
+      },
+      settings,
+    );
+    return c.json({ ok: true, outcome: r.outcome }, 201);
   });
 
   // ===== واجهة API الخاصة (لوحة التحكم + المهام الدورية) =====

@@ -1,3 +1,4 @@
+import { NEWS_SOURCE_META } from "@qfx/shared";
 import { XMLParser } from "fast-xml-parser";
 import { fetchWithTimeout, stripHtml } from "./fetch";
 
@@ -87,17 +88,15 @@ async function tradingview(): Promise<NewsItem[]> {
   return items;
 }
 
-/** المصادر المدمجة (من Spir-Telegrambot) */
-export const BUILT_IN_SOURCES: NewsSource[] = [
-  { id: "inv_fx", label: "Investing عربي — العملات", url: "https://sa.investing.com/rss/news_1.rss", on: true },
-  { id: "inv_eco", label: "Investing عربي — الاقتصاد", url: "https://sa.investing.com/rss/news_14.rss", on: true },
-  { id: "inv_cmd", label: "Investing عربي — السلع", url: "https://sa.investing.com/rss/news_11.rss", on: false },
-  { id: "tv_news", label: "TradingView News", fetch: tradingview, on: true, note: "واجهة غير رسمية وقد تتغير" },
-  { id: "fxstreet", label: "FXStreet", url: "https://www.fxstreet.com/rss/news", on: false, note: "قد يحجبه Cloudflare" },
-  { id: "forexlive", label: "ForexLive", url: "https://www.forexlive.com/feed/news", on: false },
-  { id: "cnbc", label: "CNBC — الاقتصاد", url: "https://www.cnbc.com/id/20910258/device/rss/rss.html", on: false },
-  { id: "oilprice", label: "OilPrice.com — النفط", url: "https://oilprice.com/rss/main", on: false },
-];
+/** المصادر المدمجة (من Spir-Telegrambot) — الأسماء والروابط في @qfx/shared */
+export const BUILT_IN_SOURCES: NewsSource[] = NEWS_SOURCE_META.map((m) => ({
+  id: m.id,
+  label: m.label,
+  on: m.on,
+  url: "url" in m ? m.url : undefined,
+  note: "note" in m ? m.note : undefined,
+  fetch: m.id === "tv_news" ? tradingview : undefined,
+}));
 
 export function allSources(custom: { id: string; label: string; url: string; on: boolean }[]): NewsSource[] {
   return [...BUILT_IN_SOURCES, ...custom.map((c) => ({ ...c, id: `custom_${c.id}` }))];

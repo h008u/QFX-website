@@ -53,3 +53,15 @@ export function fillTemplate(body: string, values: Record<string, string> = {}):
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+
+/**
+ * ينظّف HTML ليبقى فقط ما يدعمه تيليجرام (b/strong/i/em/u/s/code/pre/blockquote و a بروابط http/https).
+ * كل ما عداه يُعرض كنص. يُستخدم في معاينة اللوحة وقبل حفظ منشورات html المعدّلة يدوياً.
+ */
+export function sanitizeTelegramHtml(html: string): string {
+  const escaped = String(html).replace(/&(?!(?:amp|lt|gt|quot|#39);)/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return escaped
+    .replace(/&lt;(\/?)(b|strong|i|em|u|s|code|pre|blockquote)&gt;/g, "<$1$2>")
+    .replace(/&lt;a href="(https?:\/\/[^"<>\s]+)"&gt;/g, '<a href="$1">')
+    .replace(/&lt;\/a&gt;/g, "</a>");
+}

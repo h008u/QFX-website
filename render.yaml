@@ -31,7 +31,5 @@ services:
         sync: false
       - key: SITE_URL
         sync: false
-      - key: CALENDAR_MIN_IMPACT
-        value: high
-      - key: CALENDAR_TIMEZONE
-        value: Asia/Riyadh
+      - key: TWELVEDATA_API_KEY
+        sync: false

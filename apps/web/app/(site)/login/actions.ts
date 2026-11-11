@@ -22,6 +22,8 @@ async function origin() {
 export async function sendMagicLink(_: LoginState, form: FormData): Promise<LoginState> {
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const fullName = String(form.get("full_name") ?? "").trim().slice(0, 120);
+  const nextRaw = String(form.get("next") ?? "/account");
+  const next = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/account";
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, message: "البريد الإلكتروني غير صالح" };
 
   const supabase = await getAuthClient();
@@ -31,7 +33,7 @@ export async function sendMagicLink(_: LoginState, form: FormData): Promise<Logi
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${await origin()}/auth/callback?next=/account`,
+      emailRedirectTo: `${await origin()}/auth/callback?next=${encodeURIComponent(next)}`,
       // تُحفظ في raw_user_meta_data وينسخها trigger إلى profiles عند إنشاء الحساب
       data: { ...(fullName ? { full_name: fullName } : {}), ...(ref ? { referred_by: ref } : {}) },
     },

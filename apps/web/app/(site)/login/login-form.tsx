@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { sendMagicLink, type LoginState } from "./actions";
 
-export function LoginForm() {
+export function LoginForm({ next = "/account" }: { next?: string }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(sendMagicLink, { ok: false, message: "" });
 
   if (state.ok) {
@@ -20,6 +20,7 @@ export function LoginForm() {
 
   return (
     <form action={action} className="space-y-4">
+      <input type="hidden" name="next" value={next} />
       <div>
         <Label htmlFor="email">البريد الإلكتروني</Label>
         <Input id="email" name="email" type="email" required dir="ltr" autoComplete="email" />

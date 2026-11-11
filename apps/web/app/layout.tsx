@@ -1,8 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic, JetBrains_Mono } from "next/font/google";
-import { BottomNav } from "@/components/bottom-nav";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -28,12 +25,7 @@ export const viewport: Viewport = { themeColor: "#0A0A0A", viewportFit: "cover" 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" className={`${font.variable} ${mono.variable}`}>
-      <body className="min-h-screen pb-20 font-sans md:pb-0">
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
-        <BottomNav />
-      </body>
+      <body className="min-h-screen font-sans">{children}</body>
     </html>
   );
 }

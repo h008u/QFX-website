@@ -89,3 +89,11 @@ test("schedule helpers", () => {
   assert.equal(inQuietHours(now, "Asia/Riyadh", "09:00", "17:00"), false);
   assert.equal(quietEndsAt(now, "Asia/Riyadh", "09:00").toISOString(), "2026-11-13T06:00:00.000Z");
 });
+
+test("sanitizeTelegramHtml keeps telegram tags only", async () => {
+  const { sanitizeTelegramHtml } = await import("./index");
+  assert.equal(
+    sanitizeTelegramHtml('<b>ok</b> <img src=x onerror=alert(1)> <a href="https://a.com">l</a> <a href="javascript:x">j</a> a &amp; b'),
+    '<b>ok</b> &lt;img src=x onerror=alert(1)&gt; <a href="https://a.com">l</a> &lt;a href="javascript:x"&gt;j</a> a &amp; b',
+  );
+});

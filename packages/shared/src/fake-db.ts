@@ -1,5 +1,7 @@
-// قاعدة بيانات وهمية بالذاكرة تحاكي ما نستخدمه من supabase-js (للاختبارات فقط)
-import { randomUUID } from "node:crypto";
+// قاعدة بيانات وهمية بالذاكرة تحاكي ما نستخدمه من supabase-js
+// تُستخدم في اختبارات البوت، وفي "وضع المعاينة" للوحة الإدارة عندما لا تكون Supabase مربوطة.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const randomUUID = () => globalThis.crypto.randomUUID();
 
 type Row = Record<string, any>;
 type Filter = (r: Row) => boolean;
@@ -12,6 +14,8 @@ const DEFAULTS: Record<string, () => Row> = {
   }),
   signals: () => ({ status: "open", result_pips: null, notes: null, telegram_message_id: null, take_profit_2: null, take_profit_3: null, closed_at: null }),
   price_alerts: () => ({ active: true, repeat: false, cooldown_min: 60, last_price: null, triggered_at: null, trigger_count: 0, note: null }),
+  leads: () => ({ status: "new", notes: null }),
+  audit_log: () => ({ details: null, ip: null }),
   task_runs: () => ({ last_run_at: null, ok: null, error: null, result: null, runs: 0, failures: 0 }),
   news: () => ({ published_to_telegram: false, telegram_message_id: null, meta: null }),
   settings: () => ({}),
@@ -29,7 +33,7 @@ export class FakeDb {
   }
 }
 
-class Query implements PromiseLike<{ data: any; error: any }> {
+class Query implements PromiseLike<{ data: any; error: any; count?: number }> {
   private op: "select" | "insert" | "update" | "upsert" | "delete" = "select";
   private filters: Filter[] = [];
   private payload: Row | Row[] | null = null;
@@ -38,11 +42,15 @@ class Query implements PromiseLike<{ data: any; error: any }> {
   private mode: "many" | "single" | "maybe" = "many";
   private orderBy: { col: string; asc: boolean } | null = null;
   private lim: number | null = null;
+  private countMode = false;
+  private headOnly = false;
 
   constructor(private db: FakeDb, private table: string) {}
 
-  select(_cols?: string) {
+  select(_cols?: string, opts?: { count?: "exact"; head?: boolean }) {
     if (this.op !== "select") this.returning = true;
+    if (opts?.count) this.countMode = true;
+    if (opts?.head) this.headOnly = true;
     return this;
   }
   insert(p: Row | Row[]) {
@@ -94,6 +102,15 @@ class Query implements PromiseLike<{ data: any; error: any }> {
     this.filters.push((r) => re.test(String(r[c] ?? "")));
     return this;
   }
+  ilike(c: string, pattern: string) {
+    const re = new RegExp(`^${pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/%/g, ".*")}$`, "i");
+    this.filters.push((r) => re.test(String(r[c] ?? "")));
+    return this;
+  }
+  is(c: string, v: null) {
+    this.filters.push((r) => (r[c] ?? null) === v);
+    return this;
+  }
   not(c: string, op: string, v: unknown) {
     if (op === "is" && v === null) this.filters.push((r) => r[c] !== null && r[c] !== undefined);
     else if (op === "like") {
@@ -108,6 +125,10 @@ class Query implements PromiseLike<{ data: any; error: any }> {
       const val = rest.join(".");
       if (op === "is" && val === "null") return (r: Row) => r[col] === null || r[col] === undefined;
       if (op === "lt") return (r: Row) => r[col] !== null && r[col] !== undefined && String(r[col]) < val;
+      if (op === "ilike") {
+        const re = new RegExp(`^${val.split(/[%*]/).map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".*")}$`, "i");
+        return (r: Row) => re.test(String(r[col] ?? ""));
+      }
       throw new Error(`unsupported or: ${p}`);
     });
     this.filters.push((r) => parts.some((f) => f(r)));
@@ -180,17 +201,19 @@ class Query implements PromiseLike<{ data: any; error: any }> {
       const { col, asc } = this.orderBy;
       out = [...out].sort((a, b) => (String(a[col]) < String(b[col]) ? -1 : String(a[col]) > String(b[col]) ? 1 : 0) * (asc ? 1 : -1));
     }
+    const total = out.length;
     if (this.lim !== null) out = out.slice(0, this.lim);
+    if (this.countMode && this.headOnly) return { data: null, error: null, count: total } as any;
     const copy = (r: Row) => structuredClone(r);
     if (this.mode === "single") {
       return out.length === 1 ? { data: copy(out[0]), error: null } : { data: null, error: { message: `expected 1 row, got ${out.length}` } };
     }
     if (this.mode === "maybe") return { data: out[0] ? copy(out[0]) : null, error: null };
     if (this.op !== "select" && !this.returning) return { data: null, error: null };
-    return { data: out.map(copy), error: null };
+    return { data: out.map(copy), error: null, ...(this.countMode ? { count: total } : {}) };
   }
 
-  then<A, B>(ok?: ((v: { data: any; error: any }) => A | PromiseLike<A>) | null, bad?: ((e: unknown) => B | PromiseLike<B>) | null) {
+  then<A, B>(ok?: ((v: { data: any; error: any; count?: number }) => A | PromiseLike<A>) | null, bad?: ((e: unknown) => B | PromiseLike<B>) | null) {
     return Promise.resolve()
       .then(() => this.exec())
       .then(ok, bad);

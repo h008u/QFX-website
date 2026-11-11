@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
-import { FakeDb } from "../../test/fake-db";
+import { FakeDb } from "@qfx/shared/fake-db";
 import { FakeTelegram } from "../../test/fake-telegram";
 
 const tg = new FakeTelegram();

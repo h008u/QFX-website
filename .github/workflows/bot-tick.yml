@@ -1,11 +1,12 @@
-# يوقظ خدمة البوت المجانية ويشغّل مهمة المفكرة الاقتصادية كل ساعة.
+# يوقظ خدمة البوت المجانية ويشغّل دورة المهام (الأخبار، الأجندة، التنبيهات، التحيات، المجدول).
+# GitHub يؤخّر المهام المجدولة أحياناً؛ للدقة استخدم cron-job.org كل 5 دقائق بنفس الطلب.
 # أضف في Settings → Secrets and variables → Actions:
 #   BOT_PUBLIC_URL (مثل https://qfx-bot.onrender.com) و BOT_API_KEY
-name: Economic calendar
+name: Bot tick
 
 on:
   schedule:
-    - cron: "17 * * * 1-5"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -13,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Trigger calendar job
+      - name: Trigger tick
         env:
           BOT_PUBLIC_URL: ${{ secrets.BOT_PUBLIC_URL }}
           BOT_API_KEY: ${{ secrets.BOT_API_KEY }}
@@ -26,4 +27,4 @@ jobs:
           curl -fsS --retry 3 --retry-delay 20 --max-time 90 "$BOT_PUBLIC_URL/health"
           curl -fsS --retry 2 --retry-delay 10 --max-time 90 -X POST \
             -H "Authorization: Bearer $BOT_API_KEY" \
-            "$BOT_PUBLIC_URL/api/jobs/calendar"
+            "$BOT_PUBLIC_URL/api/jobs/tick"

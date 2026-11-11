@@ -6,11 +6,12 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "تسجيل الدخول", robots: { index: false } };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
+  const { error, next: nextRaw } = await searchParams;
+  const next = nextRaw?.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/account";
   const supabase = await getAuthClient();
   const user = (await supabase?.auth.getUser())?.data.user;
-  if (user) redirect("/account");
-  const { error } = await searchParams;
+  if (user) redirect(next);
 
   return (
     <div className="container flex justify-center py-16">
@@ -25,7 +26,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </p>
         )}
         <div className="mt-6">
-          <LoginForm />
+          <LoginForm next={next} />
         </div>
       </Card>
     </div>
