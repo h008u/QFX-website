@@ -25,6 +25,7 @@ export interface LogPost {
   photo_url: string | null;
   categories: string[];
   results: { dest: string; chat_id: string; ok: boolean; error?: string; message_id?: number }[];
+  views?: number | null;
   created_at: string;
   published_at: string | null;
   scheduled_at: string | null;
@@ -51,6 +52,7 @@ function Row({ p, canEdit, destLabels }: { p: LogPost; canEdit: boolean; destLab
           <span className="block truncate text-sm">{p.title || plain(p.body).slice(0, 120)}</span>
           {p.reason && <span className="block truncate text-xs text-muted-foreground">{p.reason}</span>}
         </span>
+        {p.views ? <span className="num hidden shrink-0 text-[11px] text-muted-foreground md:inline">👁 {p.views}</span> : null}
         {p.score !== null && <span className="num hidden shrink-0 rounded bg-secondary px-1.5 text-[11px] text-muted-foreground md:inline">{p.score}</span>}
         <span className="num shrink-0 text-xs text-muted-foreground">{p.createdLabel}</span>
         <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />

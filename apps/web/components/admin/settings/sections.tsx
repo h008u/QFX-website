@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  CURRENCY_LABEL, DEFAULT_SETTINGS, MARKETS, NEWS_CATEGORIES, NEWS_SOURCE_META, POST_KIND_LABEL,
+  CURRENCY_LABEL, DEFAULT_SETTINGS, DESTINATION_LANGS, MARKETS, NEWS_CATEGORIES, NEWS_SOURCE_META, POST_KIND_LABEL,
   type BotSettings, type Destination, type PostKind,
 } from "@qfx/shared";
 import { CheckCircle2, Plus, RefreshCw, Trash2, XCircle } from "lucide-react";
@@ -50,7 +50,7 @@ function DestinationRow({ d, onChange, onRemove, canEdit }: { d: Destination; on
   const kinds = all ? KINDS : (d.kinds as PostKind[]);
   return (
     <div className={cn("rounded-lg border border-border p-4", !d.enabled && "opacity-60")}>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_120px_auto]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_110px_130px_auto]">
         <Field label="الاسم">
           <input className={inputCls} value={d.label} disabled={!canEdit} onChange={(e) => onChange({ ...d, label: e.target.value })} />
         </Field>
@@ -59,6 +59,14 @@ function DestinationRow({ d, onChange, onRemove, canEdit }: { d: Destination; on
         </Field>
         <Field label="موضوع (Topic)" hint="اختياري">
           <input className={inputCls} type="number" value={d.thread_id ?? ""} disabled={!canEdit} onChange={(e) => onChange({ ...d, thread_id: e.target.value ? Number(e.target.value) : null })} dir="ltr" />
+        </Field>
+        <Field label="اللغة" hint="ترجمة تلقائية">
+          <select className={inputCls} value={d.lang ?? ""} disabled={!canEdit} onChange={(e) => onChange({ ...d, lang: e.target.value || null })}>
+            <option value="">العربية (الأصل)</option>
+            {Object.entries(DESTINATION_LANGS).map(([k, l]) => (
+              <option key={k} value={k}>{l}</option>
+            ))}
+          </select>
         </Field>
         <div className="flex items-end gap-2 pb-0.5">
           <Switch checked={d.enabled} disabled={!canEdit} onChange={(enabled) => onChange({ ...d, enabled })} label="مفعّل" />
@@ -405,6 +413,48 @@ export function WeeklySection({ initial, canEdit }: { initial: BotSettings["week
         </Field>
       </div>
       {bar(canEdit)}
+    </Section>
+  );
+}
+
+export function ExtrasSection({
+  outlook,
+  results,
+  views,
+  canEdit,
+}: {
+  outlook: BotSettings["outlook"];
+  results: BotSettings["event_results"];
+  views: BotSettings["views"];
+  canEdit: boolean;
+}) {
+  const o = useSection("outlook", outlook);
+  const r = useSection("event_results", results);
+  const v = useSection("views", views);
+  return (
+    <Section id="extras" title="🔭 نظرة الأسبوع، نتائج الأخبار، والمشاهدات">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-3 rounded-lg border border-border p-4">
+          <Switch checked={o.value.enabled} disabled={!canEdit} onChange={(enabled) => o.setValue({ ...o.value, enabled })} label="نظرة الأسبوع" description="أهم أحداث الأسبوع والتوصيات المفتوحة في منشور واحد" />
+          <div className="grid grid-cols-2 gap-2">
+            <select className={inputCls} value={o.value.day} disabled={!canEdit} onChange={(e) => o.setValue({ ...o.value, day: Number(e.target.value) })}>
+              {DAYS.map((d, i) => (<option key={d} value={i}>{d}</option>))}
+            </select>
+            <input className={inputCls} type="time" value={o.value.time} disabled={!canEdit} onChange={(e) => o.setValue({ ...o.value, time: e.target.value })} dir="ltr" />
+          </div>
+          {canEdit && <TestButton what="outlook" label="تجربة الآن" />}
+          {o.bar(canEdit)}
+        </div>
+        <div className="space-y-3 rounded-lg border border-border p-4">
+          <Switch checked={r.value.enabled} disabled={!canEdit} onChange={(enabled) => r.setValue({ enabled })} label="📢 نتيجة الخبر بعد صدوره" description="الفعلي مقابل المتوقع وحجم المفاجأة والقراءة المعتادة. يعمل فقط إذا كان مصدر المفكرة يعطي الرقم الفعلي." />
+          {r.bar(canEdit)}
+        </div>
+        <div className="space-y-3 rounded-lg border border-border p-4">
+          <Switch checked={v.value.enabled} disabled={!canEdit} onChange={(enabled) => v.setValue({ enabled })} label="👁 عدّ المشاهدات" description="كل ساعة من صفحة القناة العامة (t.me/s). للقنوات العامة فقط، والأرقام تقريبية." />
+          {canEdit && <TestButton what="views" label="تحديث الآن" />}
+          {v.bar(canEdit)}
+        </div>
+      </div>
     </Section>
   );
 }

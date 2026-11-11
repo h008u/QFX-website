@@ -1,5 +1,5 @@
 import "server-only";
-import { DEFAULT_SETTINGS, deepMerge, isValidTime, POLICY_KINDS, POST_KIND_LABEL, type BotSettings, type SettingsKey } from "@qfx/shared";
+import { DEFAULT_SETTINGS, deepMerge, DESTINATION_LANGS, isValidTime, POLICY_KINDS, POST_KIND_LABEL, type BotSettings, type SettingsKey } from "@qfx/shared";
 
 const clampInt = (v: unknown, min: number, max: number, d: number) => {
   const n = Math.round(Number(v));
@@ -38,6 +38,7 @@ export function cleanSection<K extends SettingsKey>(key: K, raw: unknown): BotSe
           label: str(d.label, 60).trim() || chat,
           kinds: d.kinds === "all" ? "all" : (Array.isArray(d.kinds) ? d.kinds.filter((k) => kinds.includes(k)) : []),
           enabled: d.enabled !== false,
+          lang: d.lang && d.lang in DESTINATION_LANGS ? d.lang : null,
         };
       }) as BotSettings[K];
     }
@@ -134,6 +135,50 @@ export function cleanSection<K extends SettingsKey>(key: K, raw: unknown): BotSe
     }
     case "tradingview":
       return { enabled: Boolean((v as BotSettings["tradingview"]).enabled) } as BotSettings[K];
+    case "outlook": {
+      const o = v as BotSettings["outlook"];
+      return { enabled: Boolean(o.enabled), day: day(o.day, 0), time: time(o.time, "10:00") } as BotSettings[K];
+    }
+    case "event_results":
+    case "views":
+      return { enabled: Boolean((v as { enabled: boolean }).enabled) } as BotSettings[K];
+    case "mt5": {
+      const m = v as BotSettings["mt5"];
+      return {
+        enabled: Boolean(m.enabled),
+        publish_open: Boolean(m.publish_open),
+        publish_modify: Boolean(m.publish_modify),
+        publish_close: Boolean(m.publish_close),
+        symbols: words(m.symbols).map((x) => x.toUpperCase().replace(/[^A-Z0-9.]/g, "")).filter(Boolean).slice(0, 30),
+      } as BotSettings[K];
+    }
+    case "strategies": {
+      const st = v as BotSettings["strategies"];
+      const ids = DEFAULT_SETTINGS.strategies.list.map((x) => x.id);
+      return {
+        enabled: Boolean(st.enabled),
+        symbols: words(st.symbols).map((x) => x.toUpperCase().replace(/[^A-Z0-9]/g, "")).filter((x) => x.length >= 3).slice(0, 8),
+        timeframe: (["15min", "1h", "4h"] as const).includes(st.timeframe) ? st.timeframe : "1h",
+        list: ids.map((id) => {
+          const c = st.list.find((x) => x.id === id) ?? DEFAULT_SETTINGS.strategies.list.find((x) => x.id === id)!;
+          let tp1 = Math.max(0.3, Math.min(10, Number(c.tp1_r) || 1));
+          let tp2 = Math.max(0.3, Math.min(10, Number(c.tp2_r) || 2));
+          if (tp2 < tp1) [tp1, tp2] = [tp2, tp1];
+          return {
+            id,
+            enabled: Boolean(c.enabled),
+            stop: c.stop === "fixed" ? "fixed" : "atr",
+            atr_mult: Math.max(0.3, Math.min(10, Number(c.atr_mult) || 1.5)),
+            fixed_pips: clampInt(c.fixed_pips, 1, 5000, 30),
+            tp1_r: tp1,
+            tp2_r: tp2,
+            max_per_day: clampInt(c.max_per_day, 1, 20, 3),
+            avoid_news_min: clampInt(c.avoid_news_min, 0, 240, 30),
+            sessions: (c.sessions ?? []).filter((x) => ["asia", "london", "newyork"].includes(x)),
+          };
+        }),
+      } as BotSettings[K];
+    }
   }
   return v;
 }

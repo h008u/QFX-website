@@ -40,3 +40,44 @@ export async function translate(text: string, lang = "ar"): Promise<string> {
     return text;
   }
 }
+
+const unescapeHtml = (s: string) =>
+  s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+const escapeText = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** ترجمة منشور HTML بدون ما تخرب الوسوم: كل نص بين الوسوم يُترجم وحده (منقول من Spir) */
+export async function translateHtml(html: string, lang: string): Promise<string> {
+  const parts = String(html).split(/(<[^>]+>)/);
+  const out = await Promise.all(
+    parts.map(async (p) => {
+      if (p.startsWith("<") || !/\p{L}/u.test(p)) return p;
+      const lead = p.match(/^\s*/)?.[0] ?? "";
+      const tail = p.match(/\s*$/)?.[0] ?? "";
+      const t = await translateTo(unescapeHtml(p.trim()), lang);
+      return lead + escapeText(t) + tail;
+    }),
+  );
+  return out.join("");
+}
+
+/** ترجمة إلى أي لغة (بدون شرط "النص ليس عربياً") */
+export async function translateTo(text: string, lang: string): Promise<string> {
+  if (!text?.trim()) return text;
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(text.slice(0, 1800))}`;
+    const res = await fetchWithTimeout(url, {}, 10_000);
+    if (!res.ok) return text;
+    const data = (await res.json()) as [[string][]];
+    return data[0].map((p) => p[0]).join("") || text;
+  } catch {
+    return text;
+  }
+}
+
+/** رقم من نص مثل 3.2% أو 210K أو -0.5 */
+export function numberOf(v: unknown): number | null {
+  const m = String(v ?? "").replace(/,/g, "").match(/^\s*([-+]?\d*\.?\d+)\s*([KMBT%])?/i);
+  if (!m) return null;
+  const mult = ({ K: 1e3, M: 1e6, B: 1e9, T: 1e12 } as Record<string, number>)[(m[2] || "").toUpperCase()] || 1;
+  return Number(m[1]) * mult;
+}

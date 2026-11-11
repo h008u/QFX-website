@@ -23,3 +23,12 @@ export function eventReadingText(currency: string, titleEn: string): string {
   const gold = currency === "USD" ? "\n🥇 الذهب يتحرك عادةً عكس الدولار." : "";
   return `📖 إذا جاء <b>أعلى</b> من المتوقع ← عادةً ${up} ${r.cur}.\nإذا جاء <b>أقل</b> ← عادةً ${down} ${r.cur}.${gold}`;
 }
+
+/** بعد الخبر: القراءة المعتادة للنتيجة (higher = الفعلي أعلى من المتوقع) */
+export function resultReadingText(currency: string, titleEn: string, higher: boolean): string {
+  const r = readingOf(currency, titleEn);
+  if (!r || r.talk) return "";
+  const good = higher === r.higherGood;
+  const gold = currency === "USD" ? ` والذهب عادةً ${good ? "يتراجع" : "يستفيد"}` : "";
+  return `📖 القراءة المعتادة: ${good ? "إيجابي" : "سلبي"} لـ${r.cur}${gold}.`;
+}

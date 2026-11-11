@@ -18,6 +18,7 @@ interface Row {
   created_at: string;
   published_at: string | null;
   scheduled_at: string | null;
+  views?: number | null;
 }
 
 const dayKey = (iso: string, tz: string) => new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date(iso));
@@ -28,7 +29,7 @@ export default async function OverviewPage() {
   const tz = s.general.timezone;
   const since7 = new Date(Date.now() - 7 * 86400_000).toISOString();
   const [{ data: posts }, { data: audit }, { data: tasks }, leadsRes] = await Promise.all([
-    ctx.db.from("posts").select("id, kind, status, title, body, created_at, published_at, scheduled_at").gte("created_at", since7).order("created_at", { ascending: false }).limit(2000),
+    ctx.db.from("posts").select("id, kind, status, title, body, created_at, published_at, scheduled_at, views").gte("created_at", since7).order("created_at", { ascending: false }).limit(2000),
     ctx.db.from("audit_log").select("action, target, actor_email, created_at").order("created_at", { ascending: false }).limit(8),
     ctx.db.from("task_runs").select("task, ok, error, last_run_at").neq("task", "_tick_lock"),
     ctx.db.from("leads").select("id", { count: "exact", head: true }).gte("created_at", since7),
@@ -71,6 +72,13 @@ export default async function OverviewPage() {
   const byKind = new Map<PostKind, number>();
   rows.filter(isPub).forEach((r) => byKind.set(r.kind, (byKind.get(r.kind) ?? 0) + 1));
   const failing = (tasks ?? []).filter((t) => t.ok === false);
+  const viewed = rows.filter((r) => r.views).sort((a, b) => Number(b.views) - Number(a.views));
+  const avgByKind = [...new Set(viewed.map((r) => r.kind))]
+    .map((k) => {
+      const list = viewed.filter((r) => r.kind === k);
+      return { k, avg: Math.round(list.reduce((a, r) => a + Number(r.views), 0) / list.length) };
+    })
+    .sort((a, b) => b.avg - a.avg);
 
   return (
     <>
@@ -147,6 +155,8 @@ export default async function OverviewPage() {
         </div>
       </div>
 
+      <ViewsCard top={viewed} avg={avgByKind} />
+
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="rounded-lg border border-border bg-card">
           <div className="flex items-center justify-between border-b border-border px-5 py-3">
@@ -182,6 +192,40 @@ export default async function OverviewPage() {
         </div>
       </div>
     </>
+  );
+}
+
+function ViewsCard({ top, avg }: { top: Row[]; avg: { k: PostKind; avg: number }[] }) {
+  if (!top.length) return null;
+  return (
+    <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="rounded-lg border border-border bg-card">
+        <h2 className="border-b border-border px-5 py-3 font-bold">👁 الأكثر مشاهدة (7 أيام)</h2>
+        <ul>
+          {top.slice(0, 6).map((p) => (
+            <li key={p.id} className="flex items-center gap-3 border-b border-border/60 px-5 py-2.5 text-sm last:border-0">
+              <span className="num w-14 shrink-0 font-bold text-primary">{p.views}</span>
+              <span className="min-w-0 flex-1 truncate">{p.title || p.body.replace(/[*_`<>]/g, "").slice(0, 80)}</span>
+              <span className="shrink-0 text-xs text-muted-foreground">{POST_KIND_LABEL[p.kind]}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="rounded-lg border border-border bg-card">
+        <h2 className="border-b border-border px-5 py-3 font-bold">متوسط المشاهدات لكل نوع</h2>
+        <ul className="space-y-2 p-5">
+          {avg.map(({ k, avg: n }) => (
+            <li key={k} className="flex items-center gap-3 text-sm">
+              <span className="w-32 shrink-0">{POST_KIND_LABEL[k]}</span>
+              <span className="h-2 flex-1 overflow-hidden rounded bg-secondary">
+                <span className="block h-full bg-primary" style={{ width: `${(n / Math.max(...avg.map((x) => x.avg))) * 100}%` }} />
+              </span>
+              <span className="num w-12 text-end">{n}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 

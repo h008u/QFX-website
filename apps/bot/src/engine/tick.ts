@@ -1,11 +1,13 @@
 import { isSlotDue, type BotSettings } from "@qfx/shared";
-import { runAgenda, runEventAlerts, syncCalendar } from "../services/calendar";
+import { runAgenda, runEventAlerts, runEventResults, syncCalendar } from "../services/calendar";
 import { db } from "../supabase";
 import { runPriceAlerts } from "./alerts";
 import { messageAdmins } from "./approvals";
 import { getState, loadSettings, setState } from "./config";
 import { holidayOf, runGreetings } from "./greetings";
 import { runNews } from "./news";
+import { runOutlook } from "./outlook";
+import { runViews } from "./views";
 import { publishPost } from "./publish";
 import { runWeekly } from "./weekly";
 
@@ -80,6 +82,9 @@ function tasks(s: BotSettings): { id: string; everyMin: number; enabled: boolean
     { id: "greetings", everyMin: 0, enabled: true, run: runGreetings },
     { id: "agenda", everyMin: 0, enabled: s.calendar.agenda_enabled, run: runAgendaIfDue },
     { id: "weekly", everyMin: 0, enabled: s.weekly.enabled, run: runWeekly },
+    { id: "outlook", everyMin: 0, enabled: s.outlook.enabled, run: runOutlook },
+    { id: "event_results", everyMin: 0, enabled: s.event_results.enabled, run: runEventResults },
+    { id: "views", everyMin: 60, enabled: s.views.enabled, run: (s) => runViews(s) },
   ];
 }
 

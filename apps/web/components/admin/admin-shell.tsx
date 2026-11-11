@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
+import { Toaster } from "./toaster";
 import { ADMIN_NAV } from "./nav";
 
 export interface ShellCounts {
@@ -201,6 +202,7 @@ export function AdminShell({
         <main className="p-4 md:p-6 lg:p-8">{children}</main>
       </div>
 
+      <Toaster />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} isAdmin={isAdmin} />
     </div>
   );

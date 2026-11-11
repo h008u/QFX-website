@@ -63,7 +63,7 @@ export async function checkSourcesAction(): Promise<{ ok: boolean; message?: str
 /** تجربة فورية لقسم (تحية، أجندة، ملخص...) */
 export async function runTestAction(what: string): Promise<ActionResult> {
   const ctx = await requireRole("editor");
-  if (!/^(morning|open|close|agenda|weekly|news|calendar|alerts|due)$/.test(what)) return { ok: false, message: "قسم غير معروف" };
+  if (!/^(morning|open|close|agenda|weekly|outlook|views|news|calendar|alerts|due|strategies)$/.test(what)) return { ok: false, message: "قسم غير معروف" };
   if (ctx.demo) return { ok: false, message: "التجربة تحتاج خدمة البوت (غير متاحة في وضع المعاينة)" };
   const r = await callBot<{ result: unknown }>(`/test/${what}`, "POST", {}, 90_000);
   await audit(ctx, "test.run", what);

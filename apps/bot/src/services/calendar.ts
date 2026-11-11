@@ -1,7 +1,8 @@
 import {
-  eventReadingText, formatCalendarDigest, impactScore, localParts, CURRENCY_LABEL, IMPACT_ICON, IMPACT_LABEL,
+  eventReadingText, resultReadingText, formatCalendarDigest, impactScore, localParts, CURRENCY_LABEL, IMPACT_ICON, IMPACT_LABEL,
   escapeHtml, type BotSettings, type CalendarEventView, type Impact,
 } from "@qfx/shared";
+import { numberOf } from "../engine/fetch";
 import { intake } from "../engine/intake";
 import { db } from "../supabase";
 import { translateEventTitle } from "./calendar-translate";
@@ -17,10 +18,12 @@ export interface RawCalendarEvent {
   impact: string;
   forecast?: string;
   previous?: string;
+  actual?: string;
 }
 
 export interface CalendarEvent extends CalendarEventView {
   external_id: string;
+  actual?: string;
 }
 
 const IMPACT_MAP: Record<string, Impact | undefined> = { High: "high", Medium: "medium", Low: "low" };
@@ -45,6 +48,7 @@ export function filterEvents(
       time,
       forecast: e.forecast || undefined,
       previous: e.previous || undefined,
+      actual: e.actual || undefined,
     }))
     .sort((a, b) => a.time.getTime() - b.time.getTime());
 }
@@ -81,7 +85,7 @@ export async function syncCalendar(s: BotSettings) {
       source: "ForexFactory",
       external_id: e.external_id,
       // العناوين الأصلية والأرقام تُحدّث في كل مزامنة
-      meta: { title_en: e.title_en, forecast: e.forecast ?? null, previous: e.previous ?? null },
+      meta: { title_en: e.title_en, forecast: e.forecast ?? null, previous: e.previous ?? null, actual: e.actual ?? null },
     }));
     const { error } = await db().from("news").upsert(rows, { onConflict: "external_id" });
     if (error) throw error;
@@ -95,7 +99,7 @@ interface CalRow {
   currency: string;
   impact: Impact;
   event_time: string;
-  meta: { title_en?: string; forecast?: string | null; previous?: string | null } | null;
+  meta: { title_en?: string; forecast?: string | null; previous?: string | null; actual?: string | null } | null;
 }
 
 const toView = (r: CalRow): CalendarEventView => ({
@@ -182,4 +186,46 @@ export async function runEventAlerts(s: BotSettings, now = new Date()) {
     outcomes.push(res.outcome);
   }
   return { upcoming: rows.length, outcomes };
+}
+
+/** حجم المفاجأة: شكد بعيد الفعلي عن المتوقع */
+export function surprise(actual: string, forecast?: string | null) {
+  const a = numberOf(actual);
+  const f = numberOf(forecast);
+  if (a === null || f === null || a === f) return null;
+  if (f === 0) return { higher: a > f, label: a > f ? "⬆️ أعلى من المتوقع" : "⬇️ أقل من المتوقع" };
+  const pct = Math.abs((a - f) / f) * 100;
+  const size = pct >= 25 ? " — 💥 مفاجأة كبيرة" : pct >= 10 ? " — ⚡ مفاجأة متوسطة" : "";
+  return { higher: a > f, label: `${a > f ? "⬆️ أعلى" : "⬇️ أقل"} من المتوقع${size}` };
+}
+
+/**
+ * نتيجة الخبر بعد صدوره (الفعلي مقابل المتوقع). يعمل فقط إذا كان المصدر يعطي الرقم الفعلي؛
+ * بيانات ForexFactory المجانية قد لا تحتويه، فيبقى القسم ساكتاً.
+ */
+export async function runEventResults(s: BotSettings, now = new Date()) {
+  const rows = (await eventsBetween(new Date(now.getTime() - 3 * 3600_000), now)).filter((r) => r.meta?.actual);
+  const outcomes: string[] = [];
+  for (const r of rows) {
+    const v = toView(r);
+    const actual = r.meta!.actual!;
+    const cmp = surprise(actual, v.forecast);
+    const lines = [
+      `📢 <b>صدر الآن: ${escapeHtml(v.title_ar)}</b>`,
+      `${escapeHtml(CURRENCY_LABEL[v.currency] ?? v.currency)} • ${IMPACT_ICON[v.impact]}`,
+      [`الفعلي: <b>${escapeHtml(actual)}</b>`, v.forecast && `المتوقع: ${escapeHtml(v.forecast)}`, v.previous && `السابق: ${escapeHtml(v.previous)}`].filter(Boolean).join(" | "),
+    ];
+    if (cmp) lines.push(cmp.label);
+    if (cmp && s.calendar.explain) {
+      const reading = resultReadingText(v.currency, v.title_en, cmp.higher);
+      if (reading) lines.push("", reading, "<i>تعليمي وليس توصية.</i>");
+    }
+    const res = await intake(
+      { kind: "event_result", title: v.title_ar, body: lines.join("\n"), format: "html", external_id: `result:${r.external_id}`, score: impactScore(v.impact), policy: "agenda", breaking: true, skipRules: true },
+      s,
+      now,
+    );
+    outcomes.push(res.outcome);
+  }
+  return { with_actual: rows.length, outcomes };
 }

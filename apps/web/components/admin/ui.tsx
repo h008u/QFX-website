@@ -3,6 +3,7 @@
 import { POST_KIND_LABEL, POST_STATUS_LABEL, type PostKind, type PostStatus } from "@qfx/shared";
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
+import { emitToast } from "./toaster";
 
 export interface ActionResult {
   ok: boolean;
@@ -40,10 +41,12 @@ export function useAction<A extends unknown[]>(fn: (...args: A) => Promise<Actio
         try {
           const r = await fn(...args);
           setResult(r);
+          emitToast(r.ok, r.message);
           resolve(r);
         } catch (e) {
           const r = { ok: false, message: e instanceof Error ? e.message : "حدث خطأ" };
           setResult(r);
+          emitToast(false, r.message);
           resolve(r);
         }
       }),

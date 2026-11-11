@@ -1,5 +1,5 @@
 import {
-  CalendarSection, DestinationsSection, GeneralSection, GreetingsSection, HolidaysSection, NewsSection, TradingViewSection, WeeklySection,
+  CalendarSection, DestinationsSection, ExtrasSection, GeneralSection, GreetingsSection, HolidaysSection, NewsSection, TradingViewSection, WeeklySection,
 } from "@/components/admin/settings/sections";
 import { PageHeader } from "@/components/admin/ui";
 import { listMedia } from "@/lib/admin/media";
@@ -15,6 +15,7 @@ const NAV = [
   ["calendar", "الأجندة"],
   ["greetings", "التحيات"],
   ["weekly", "ملخص الأسبوع"],
+  ["extras", "النظرة والنتائج والمشاهدات"],
   ["holidays", "العطل"],
   ["tradingview", "TradingView"],
 ] as const;
@@ -44,6 +45,7 @@ export default async function SettingsPage() {
         <CalendarSection initial={s.calendar} canEdit={edit} />
         <GreetingsSection initial={s.greetings} media={media} canEdit={edit} />
         <WeeklySection initial={s.weekly} canEdit={edit} />
+        <ExtrasSection outlook={s.outlook} results={s.event_results} views={s.views} canEdit={edit} />
         <HolidaysSection initial={s.holidays} canEdit={edit} />
         <TradingViewSection initial={s.tradingview} webhookUrl={webhookUrl} canEdit={edit} />
       </div>

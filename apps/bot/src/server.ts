@@ -12,6 +12,8 @@ import { checkSources, runNews } from "./engine/news";
 import { publishPost } from "./engine/publish";
 import { publishDue, runTick } from "./engine/tick";
 import { postWeekly } from "./engine/weekly";
+import { postOutlook } from "./engine/outlook";
+import { runViews } from "./engine/views";
 import { runAgenda, runEventAlerts, syncCalendar } from "./services/calendar";
 import { db } from "./supabase";
 import { createNews } from "./services/news";
@@ -188,6 +190,8 @@ export function createApp() {
         return runAgenda(s, now);
       },
       weekly: () => postWeekly(s, now, true),
+      outlook: () => postOutlook(s, now, true),
+      views: () => runViews(s),
       news: () => runNews(s, now),
       calendar: () => syncCalendar(s),
       alerts: () => runEventAlerts(s, now),

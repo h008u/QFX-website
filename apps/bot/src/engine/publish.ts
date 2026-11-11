@@ -2,6 +2,7 @@ import { destinationAccepts, renderMarkup, type BotSettings, type Destination } 
 import { getBot } from "../telegram";
 import { db } from "../supabase";
 import { destinationsOf, loadSettings } from "./config";
+import { translateHtml } from "./fetch";
 import type { DestResult, PostRow } from "./types";
 
 const CAPTION_LIMIT = 1024;
@@ -90,7 +91,9 @@ export async function publishPost(id: string, opts: PublishOptions = {}): Promis
   for (const dest of targets) {
     const replyTo = parentResults.find((r) => r.dest === dest.id && r.ok)?.message_id;
     try {
-      const message_id = await sendTo(dest, claimed, html, replyTo);
+      // نسخة بلغة ثانية لهذا المكان (التنسيق يبقى)
+      const localized = dest.lang && dest.lang !== "ar" ? await translateHtml(html, dest.lang) : html;
+      const message_id = await sendTo(dest, claimed, localized, replyTo);
       results.push({ dest: dest.id, chat_id: dest.chat_id, ok: true, message_id, at: new Date().toISOString() });
     } catch (e) {
       console.error(`[publish] ${claimed.id} → ${dest.chat_id}`, errText(e));

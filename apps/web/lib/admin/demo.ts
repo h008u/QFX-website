@@ -34,6 +34,7 @@ function seed(db: FakeDb) {
       posts.push({ kind: i % 3 ? "news" : "greeting", status: "published", title: `منشور سابق ${d}-${i}`, body: "…", results: res(true), created_at: ago(d * 1440 + i * 30), published_at: ago(d * 1440 + i * 30) } as never);
     }
   }
+  posts.forEach((p, i) => ((p as { views?: number }).views = p.status === "published" ? 300 + ((i * 137) % 1900) : undefined));
   for (const p of posts) db.t("posts").push({ id: crypto.randomUUID(), format: "markup", results: [], categories: [], disclaimer: false, reply_to: null, photo_url: null, source: null, source_url: null, external_id: null, score: null, reason: null, scheduled_at: null, published_at: null, updated_at: p.created_at, fingerprint: p.title ? fingerprint(p.title) : null, ...p });
 
   db.t("settings").push(
@@ -86,6 +87,15 @@ function seed(db: FakeDb) {
   const members = [["أحمد", "abc123", null], ["محمد", "def456", "abc123"], ["خالد", "ghi789", "abc123"], ["ليلى", "jkl012", "def456"]];
   for (const s of staff) db.t("profiles").push({ ...s, referral_code: s.id.slice(0, 8), referred_by: null, created_at: ago(90000) });
   members.forEach(([n, code, by], i) => db.t("profiles").push({ id: crypto.randomUUID(), full_name: n, role: "member", telegram_username: null, referral_code: code, referred_by: by, created_at: ago(1000 * (i + 1)) }));
+
+  const newsId = db.t("news").find((n) => n.kind === "calendar")?.id;
+  const sigId = db.t("signals")[0]?.id;
+  const memberIds = db.t("profiles").filter((p) => p.role === "member").map((p) => p.id);
+  db.t("comments").push(
+    { id: crypto.randomUUID(), author_id: memberIds[0], author_name: "أحمد", body: "متى تتوقعون صدور قرار الفائدة؟", news_id: newsId, signal_id: null, created_at: ago(40) },
+    { id: crypto.randomUUID(), author_id: memberIds[1], author_name: "محمد", body: "دخلت معكم من 2650 🙏", news_id: null, signal_id: sigId, created_at: ago(25) },
+    { id: crypto.randomUUID(), author_id: memberIds[2], author_name: "خالد", body: "اشتركوا بقناتي للتوصيات المجانية!!! t.me/spam", news_id: null, signal_id: sigId, created_at: ago(12) },
+  );
 
   db.t("leads").push(
     { id: crypto.randomUUID(), full_name: "يوسف عبدالله", email: null, phone: "+9647701234567", telegram_username: "yousef_fx", broker_account_id: "5012345", status: "new", referral_source: "abc123", created_at: ago(45) },
