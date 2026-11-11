@@ -1,0 +1,37 @@
+# Render Blueprint — خدمة البوت على الخطة المجانية
+# Render Dashboard → New → Blueprint → اختر هذا المستودع
+services:
+  - type: web
+    name: qfx-bot
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build -w @qfx/bot
+    startCommand: npm start -w @qfx/bot
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true
+      - key: TELEGRAM_CHANNEL_ID
+        sync: false
+      - key: TELEGRAM_ADMIN_IDS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: BOT_API_KEY
+        generateValue: true
+      - key: TRADINGVIEW_WEBHOOK_SECRET
+        generateValue: true
+      - key: PUBLIC_URL
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: CALENDAR_MIN_IMPACT
+        value: high
+      - key: CALENDAR_TIMEZONE
+        value: Asia/Riyadh

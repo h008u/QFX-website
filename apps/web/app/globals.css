@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+    --card: 222 40% 9%;
+    --card-foreground: 210 40% 96%;
+    --muted: 220 30% 14%;
+    --muted-foreground: 215 18% 65%;
+    --secondary: 220 30% 15%;
+    --secondary-foreground: 210 40% 96%;
+    --accent: 220 30% 15%;
+    --accent-foreground: 210 40% 96%;
+    --primary: 158 64% 45%;
+    --primary-foreground: 222 47% 6%;
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 60% 48%;
+    --gold: 43 90% 56%;
+    --border: 220 25% 18%;
+    --input: 220 25% 20%;
+    --ring: 158 64% 45%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* الأرقام والأسعار تُعرض دائماً من اليسار لليمين */
+  .num {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-image: linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .text-gradient {
+    @apply bg-gradient-to-l from-primary via-emerald-300 to-gold bg-clip-text text-transparent;
+  }
+}

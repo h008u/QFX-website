@@ -1,0 +1,20 @@
+{
+  "name": "qfx-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "QFX — منصة وكيل فوركس (IB): موقع تسويقي + توصيات + مجتمع + بوت تيليجرام",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @qfx/web",
+    "dev:bot": "npm run dev -w @qfx/bot",
+    "build": "npm run build -w @qfx/bot && npm run build -w @qfx/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
