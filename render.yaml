@@ -33,5 +33,9 @@ services:
         sync: false
       - key: MT5_SECRET
         generateValue: true
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
       - key: TWELVEDATA_API_KEY
         sync: false

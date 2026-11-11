@@ -3,11 +3,13 @@ import { getEnv } from "../env";
 import { getBot } from "../telegram";
 import { loadSettings } from "./config";
 import { composeHtml } from "./publish";
+import { pushToStaff } from "./push";
 import type { PostRow } from "./types";
 
 /** يرسل المنشور للمدراء بالخاص مع أزرار نشر/تجاهل */
 export async function notifyAdmins(post: PostRow, headline: string) {
   const { adminIds, siteUrl } = getEnv();
+  await pushToStaff(headline, post.title ?? post.body.slice(0, 200), "/admin/review").catch(() => undefined);
   if (!adminIds.size) return;
   const s = await loadSettings();
   const preview = composeHtml(post, s);
@@ -25,6 +27,7 @@ export async function notifyAdmins(post: PostRow, headline: string) {
 
 /** رسالة نصية للمدراء (تنبيهات الصحة) */
 export async function messageAdmins(html: string) {
+  await pushToStaff("تنبيه من البوت", html, "/admin/system").catch(() => undefined);
   for (const id of getEnv().adminIds) {
     try {
       await getBot().api.sendMessage(id, html, { parse_mode: "HTML", link_preview_options: { is_disabled: true } });

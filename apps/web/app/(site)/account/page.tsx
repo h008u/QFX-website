@@ -10,6 +10,7 @@ import { siteConfig } from "@/config/site";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { getAuthClient } from "@/lib/supabase/server";
 import { signOut } from "../login/actions";
+import { MfaSettings } from "@/components/mfa-settings";
 import { ProfileForm } from "./profile-form";
 
 export const metadata: Metadata = { title: "حسابي", robots: { index: false } };
@@ -65,6 +66,18 @@ export default async function AccountPage() {
           <ProfileForm fullName={profile?.full_name ?? ""} telegram={profile?.telegram_username ?? ""} />
         </CardContent>
       </Card>
+
+      {profile?.role && profile.role !== "member" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>🔐 التحقق بخطوتين</CardTitle>
+            <CardDescription>طبقة حماية إضافية لدخول لوحة الإدارة: بعد رابط البريد يُطلب رمز من تطبيق المصادقة على جوالك.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MfaSettings required={process.env.ADMIN_REQUIRE_MFA === "true"} />
+          </CardContent>
+        </Card>
+      )}
 
       {referralLink && (
         <Card>

@@ -17,11 +17,13 @@
     "@supabase/supabase-js": "^2.80.0",
     "fast-xml-parser": "^5.12.0",
     "grammy": "^1.38.0",
-    "hono": "^4.10.0"
+    "hono": "^4.10.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@qfx/shared": "*",
     "@types/node": "^22.0.0",
+    "@types/web-push": "^3.6.4",
     "tsup": "^8.5.0",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"

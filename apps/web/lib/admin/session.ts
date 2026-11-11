@@ -37,9 +37,15 @@ export async function getAdminContext(): Promise<AdminContext | null> {
     data: { user },
   } = await sb.auth.getUser();
   if (!user) redirect("/login?next=/admin");
+
+  // التحقق بخطوتين: إذا الحساب مفعّل عليه، لازم الجلسة تكون aal2. وإذا ADMIN_REQUIRE_MFA=true لازم يفعّله أولاً
+  const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") redirect("/mfa?next=/admin");
+  const mfaRequired = process.env.ADMIN_REQUIRE_MFA === "true";
   const { data: profile } = await sb.from("profiles").select("full_name, role").eq("id", user.id).single();
   const role = profile?.role as string | undefined;
   if (role !== "admin" && role !== "editor" && role !== "viewer") return null;
+  if (mfaRequired && aal?.currentLevel !== "aal2") redirect("/account?mfa=required#mfa");
   return { demo: false, db: sb, user: { id: user.id, email: user.email ?? "", name: profile?.full_name || user.email || "" }, role };
 }
 

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
+import { PushToggle } from "./push-toggle";
 import { Toaster } from "./toaster";
 import { ADMIN_NAV } from "./nav";
 
@@ -189,6 +190,7 @@ export function AdminShell({
                     ))}
                     {!notifications.length && <li className="px-4 py-6 text-center text-sm text-muted-foreground">لا شيء جديد 👌</li>}
                   </ul>
+                  <PushToggle />
                 </div>
               )}
             </div>

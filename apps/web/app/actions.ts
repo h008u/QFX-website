@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { pushToStaff } from "@/lib/admin/push";
 import { REF_COOKIE, sanitizeRef } from "@/lib/referral";
 import { getServerClient } from "@/lib/supabase/server";
 
@@ -42,5 +43,6 @@ export async function submitLead(_prev: LeadState, form: FormData): Promise<Lead
     console.error("[lead] insert failed", error.message);
     return { ok: false, message: "تعذّر إرسال الطلب، حاول مرة أخرى" };
   }
+  await pushToStaff("👤 طلب انضمام جديد", `${full_name}${telegram_username ? ` (@${telegram_username})` : ""}`, "/admin/crm").catch(() => 0);
   return { ok: true, message: "تم استلام طلبك! سنتواصل معك لتأكيد تفعيل حسابك وإضافتك لقناة التوصيات." };
 }
