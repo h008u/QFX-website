@@ -18,7 +18,7 @@ const url = `${publicUrl}/telegram/webhook`;
 
 await bot.api.setWebhook(url, {
   secret_token: secret,
-  allowed_updates: ["message"],
+  allowed_updates: ["message", "callback_query"],
   drop_pending_updates: true,
 });
 await bot.api.setMyCommands([
@@ -28,6 +28,10 @@ await bot.api.setMyCommands([
   { command: "close", description: "تحديث/إغلاق توصية" },
   { command: "news", description: "نشر خبر" },
   { command: "analysis", description: "نشر تحليل" },
+  { command: "pause", description: "إيقاف النشر التلقائي" },
+  { command: "resume", description: "استئناف النشر التلقائي" },
+  { command: "status", description: "حالة المهام" },
+  { command: "tick", description: "تشغيل المهام الآن" },
   { command: "id", description: "عرض المعرّف" },
 ]);
 

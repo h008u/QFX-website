@@ -13,3 +13,8 @@ export function db(): SupabaseClient {
   }
   return client;
 }
+
+/** للاختبارات فقط: استبدال العميل بقاعدة وهمية */
+export function setDbForTests(fake: unknown) {
+  client = fake as SupabaseClient;
+}

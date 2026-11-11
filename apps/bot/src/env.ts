@@ -20,9 +20,7 @@ export interface Env {
   publicUrl: string;
   siteUrl: string;
   port: number;
-  calendarCurrencies: Set<string>;
-  calendarMinImpact: "high" | "medium";
-  calendarTimeZone: string;
+  twelveDataKey: string;
 }
 
 let cached: Env | undefined;
@@ -36,7 +34,8 @@ export function getEnv(): Env {
   cached = {
     telegramToken: required("TELEGRAM_BOT_TOKEN"),
     webhookSecret,
-    channelId: required("TELEGRAM_CHANNEL_ID"),
+    // مكان النشر الافتراضي إذا لم تُضبط أماكن النشر من اللوحة
+    channelId: optional("TELEGRAM_CHANNEL_ID"),
     adminIds: new Set(
       optional("TELEGRAM_ADMIN_IDS")
         .split(",")
@@ -50,14 +49,7 @@ export function getEnv(): Env {
     publicUrl: optional("PUBLIC_URL").replace(/\/$/, ""),
     siteUrl: optional("SITE_URL").replace(/\/$/, ""),
     port: Number(optional("PORT", "8080")),
-    calendarCurrencies: new Set(
-      optional("CALENDAR_CURRENCIES", "USD,EUR,GBP,JPY,CHF,CAD,AUD,NZD")
-        .split(",")
-        .map((s) => s.trim().toUpperCase())
-        .filter(Boolean),
-    ),
-    calendarMinImpact: optional("CALENDAR_MIN_IMPACT", "high") === "medium" ? "medium" : "high",
-    calendarTimeZone: optional("CALENDAR_TIMEZONE", "Asia/Riyadh"),
+    twelveDataKey: optional("TWELVEDATA_API_KEY"),
   };
   return cached;
 }

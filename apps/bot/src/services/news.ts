@@ -1,6 +1,6 @@
 import { formatNewsMessage, type NewsInput, type NewsItem } from "@qfx/shared";
+import { firstMessageId, publishPost } from "../engine/publish";
 import { db } from "../supabase";
-import { postToChannel } from "../telegram";
 
 /** يحفظ خبراً/تحليلاً وينشره في القناة (اختيارياً) */
 export async function createNews(input: NewsInput, opts: { publish?: boolean } = {}): Promise<NewsItem> {
@@ -24,8 +24,24 @@ export async function createNews(input: NewsInput, opts: { publish?: boolean } =
 
   if (opts.publish !== false) {
     try {
-      const messageId = await postToChannel(formatNewsMessage(row));
-      await db().from("news").update({ published_to_telegram: true, telegram_message_id: messageId }).eq("id", data.id);
+      const { data: post, error: postErr } = await db()
+        .from("posts")
+        .insert({
+          kind: "manual",
+          status: "scheduled",
+          title: row.title,
+          body: formatNewsMessage(row),
+          format: "html",
+          disclaimer: row.kind === "analysis",
+          source: "المجتمع",
+          scheduled_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      if (postErr) throw postErr;
+      const published = await publishPost(post.id);
+      const messageId = firstMessageId(published);
+      await db().from("news").update({ published_to_telegram: Boolean(messageId), telegram_message_id: messageId }).eq("id", data.id);
       data.published_to_telegram = true;
       data.telegram_message_id = messageId;
     } catch (err) {

@@ -73,4 +73,54 @@ select pg_temp.check((select status = 'verified' from leads limit 1), 'admin upd
 update profiles set full_name = 'أحمد المحدّث' where id = '11111111-1111-1111-1111-111111111111';
 select pg_temp.check((select bool_and(author_name = 'أحمد المحدّث') from comments where author_id = '11111111-1111-1111-1111-111111111111'), 'name sync to comments');
 
+
+-- ===== لوحة الإدارة: أدوار الفريق =====
+insert into auth.users (id, raw_user_meta_data) values
+ ('44444444-4444-4444-4444-444444444444', '{"full_name":"محرر"}'),
+ ('55555555-5555-5555-5555-555555555555', '{"full_name":"مشاهد"}');
+update profiles set role = 'editor' where id = '44444444-4444-4444-4444-444444444444';
+update profiles set role = 'viewer' where id = '55555555-5555-5555-5555-555555555555';
+insert into posts (kind, status, body) values ('news', 'pending', 'خبر ينتظر الموافقة');
+insert into task_runs (task, ok) values ('news', true);
+
+-- المحرر يكتب وينشر
+set role authenticated;
+set request.jwt.claim.sub = '44444444-4444-4444-4444-444444444444';
+insert into posts (kind, status, body, created_by) values ('manual', 'scheduled', 'منشور مجدول', auth.uid());
+update posts set status = 'rejected' where body = 'خبر ينتظر الموافقة';
+insert into settings (key, value) values ('signature', '"QFX"');
+insert into price_alerts (symbol, direction, price) values ('XAUUSD', 'above', 2400);
+insert into audit_log (actor_id, action) values (auth.uid(), 'post.create');
+select pg_temp.expect_error($$insert into audit_log (actor_id, action) values ('33333333-3333-3333-3333-333333333333', 'spoof')$$, 'editor cannot log as another user');
+select pg_temp.check((select count(*) >= 5 from profiles), 'editor sees members');
+select pg_temp.check((select count(*) = 1 from task_runs), 'editor reads task runs');
+select pg_temp.expect_error($$update profiles set role = 'admin' where id = auth.uid()$$, 'editor cannot promote self');
+reset role;
+select pg_temp.check((select status = 'rejected' from posts where body = 'خبر ينتظر الموافقة'), 'editor updates posts');
+
+-- المشاهد يقرأ فقط
+set role authenticated;
+set request.jwt.claim.sub = '55555555-5555-5555-5555-555555555555';
+select pg_temp.check((select count(*) = 2 from posts), 'viewer reads posts');
+select pg_temp.check((select count(*) = 1 from settings), 'viewer reads settings');
+select pg_temp.expect_error($$insert into posts (kind, body) values ('manual', 'x')$$, 'viewer cannot create posts');
+select pg_temp.expect_error($$insert into settings (key, value) values ('x_y', '1')$$, 'viewer cannot write settings');
+update price_alerts set active = false;
+reset role;
+select pg_temp.check((select bool_and(active) from price_alerts), 'viewer cannot update alerts');
+
+-- العضو العادي لا يرى شيئاً من اللوحة
+set role authenticated;
+set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
+select pg_temp.check((select count(*) = 0 from posts), 'member cannot read posts');
+select pg_temp.check((select count(*) = 0 from settings), 'member cannot read settings');
+select pg_temp.check((select count(*) = 0 from audit_log), 'member cannot read audit');
+select pg_temp.check((select count(*) = 1 from profiles), 'member still sees only own profile');
+reset role;
+
+-- الزائر
+set role anon;
+select pg_temp.check((select count(*) = 0 from posts), 'anon cannot read posts');
+reset role;
+
 \echo 'ALL RLS TESTS PASSED'

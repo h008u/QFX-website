@@ -10,11 +10,12 @@
     "start": "node dist/index.js",
     "set-webhook": "tsx --env-file-if-exists=.env scripts/set-webhook.ts",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/**/*.test.ts"
+    "test": "node --import tsx --test --test-concurrency=1 src/**/*.test.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
     "@supabase/supabase-js": "^2.80.0",
+    "fast-xml-parser": "^5.12.0",
     "grammy": "^1.38.0",
     "hono": "^4.10.0"
   },

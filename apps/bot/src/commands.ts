@@ -1,6 +1,10 @@
 import { parseSignalCommand, type NewsKind, type SignalUpdateInput } from "@qfx/shared";
 import type { Bot, Context } from "grammy";
 import { getEnv } from "./env";
+import { invalidateSettings, loadSettings } from "./engine/config";
+import { publishPost } from "./engine/publish";
+import { runTick } from "./engine/tick";
+import { db } from "./supabase";
 import { createNews } from "./services/news";
 import { ValidationError, createSignal, updateSignal } from "./services/signals";
 
@@ -22,7 +26,9 @@ const HELP = [
   "<code>/analysis عنوان التحليل",
   "نص التحليل...</code>",
   "",
-  "<code>/id</code> — يعرض معرّف حسابك والمحادثة",
+  "<code>/pause</code> و <code>/resume</code> — إيقاف/استئناف النشر التلقائي",
+  "<code>/status</code> — حالة المهام الآلية",
+  "<code>/id</code> — يعرض معرّف حسابك والمحادثة (داخل موضوع مجموعة يعطيك id:topic)",
 ].join("\n");
 
 const CLOSE_ACTIONS: Record<string, SignalUpdateInput["status"]> = {
@@ -61,7 +67,12 @@ export function registerCommands(bot: Bot) {
     ),
   );
 
-  bot.command("id", (ctx) => ctx.reply(`user id: ${ctx.from?.id ?? "-"}\nchat id: ${ctx.chat.id}`));
+  bot.command("id", (ctx) => {
+    const thread = ctx.msg.message_thread_id;
+    return ctx.reply(
+      `user id: ${ctx.from?.id ?? "-"}\nchat id: ${ctx.chat.id}${thread ? `\nلموضوع المجموعة استخدم: ${ctx.chat.id}:${thread}` : ""}`,
+    );
+  });
 
   // كل ما يلي للمدراء فقط
   const admin = bot.filter(isAdmin);
@@ -108,6 +119,55 @@ export function registerCommands(bot: Bot) {
   };
   admin.command("news", newsHandler("news"));
   admin.command("analysis", newsHandler("analysis"));
+
+  // إيقاف/استئناف النشر التلقائي (مثل /pause في Spir)
+  const setPaused = (paused: boolean) => async (ctx: Context) => {
+    const s = await loadSettings(true);
+    await db().from("settings").upsert({ key: "general", value: { ...s.general, paused } });
+    invalidateSettings();
+    await ctx.reply(paused ? "⏸ تم إيقاف النشر التلقائي. المحتوى الجديد ينتظر موافقتك." : "▶️ تم استئناف النشر التلقائي.");
+  };
+  admin.command("pause", setPaused(true));
+  admin.command("resume", setPaused(false));
+
+  admin.command("status", async (ctx) => {
+    const { data } = await db().from("task_runs").select("task, last_run_at, ok, error").neq("task", "_tick_lock").order("task");
+    const s = await loadSettings();
+    const lines = [`🤖 <b>الحالة</b> ${s.general.paused ? "⏸ متوقف مؤقتاً" : "▶️ يعمل"}`, ""];
+    for (const r of data ?? []) {
+      lines.push(`${r.ok ? "✅" : "❌"} ${r.task} — ${r.last_run_at ? new Date(r.last_run_at).toISOString().slice(5, 16).replace("T", " ") : "لم تعمل"}`);
+    }
+    await ctx.reply(lines.join("\n"), { parse_mode: "HTML" });
+  });
+
+  admin.command("tick", async (ctx) => {
+    await ctx.reply("⏳ تشغيل دورة المهام...");
+    const out = await runTick();
+    await ctx.reply(`<pre>${JSON.stringify(out, null, 1).slice(0, 3500).replace(/</g, "&lt;")}</pre>`, { parse_mode: "HTML" });
+  });
+
+  // أزرار الموافقة بالخاص: p:a:<id> نشر، p:r:<id> تجاهل
+  bot.callbackQuery(/^p:(a|r):([0-9a-f-]{36})$/, async (ctx) => {
+    if (!isAdmin(ctx)) return ctx.answerCallbackQuery({ text: "غير مسموح", show_alert: true });
+    const [, action, id] = ctx.match;
+    try {
+      if (action === "a") {
+        const post = await publishPost(id, { force: true });
+        await ctx.answerCallbackQuery({ text: post.status === "published" ? "تم النشر ✅" : `الحالة: ${post.status}` });
+      } else {
+        const { data } = await db()
+          .from("posts")
+          .update({ status: "rejected", reason: `رفضه ${ctx.from.first_name ?? "المدير"} من تيليجرام` })
+          .eq("id", id)
+          .in("status", ["pending", "filtered", "duplicate", "scheduled"])
+          .select("id");
+        await ctx.answerCallbackQuery({ text: data?.length ? "تم التجاهل" : "تمت معالجته مسبقاً" });
+      }
+      await ctx.editMessageReplyMarkup({ reply_markup: undefined }).catch(() => undefined);
+    } catch (err) {
+      await ctx.answerCallbackQuery({ text: err instanceof Error ? err.message.slice(0, 180) : "خطأ", show_alert: true });
+    }
+  });
 
   bot.catch((err) => console.error("[bot] unhandled error", err.error));
 }

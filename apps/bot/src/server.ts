@@ -1,12 +1,19 @@
 import type { Direction, NewsInput, SignalInput, SignalUpdateInput } from "@qfx/shared";
 import { parseSignalCommand } from "@qfx/shared";
 import { webhookCallback } from "grammy";
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { bearerAuth } from "hono/bearer-auth";
 import { timingSafeEqual } from "node:crypto";
 import { registerCommands } from "./commands";
 import { getEnv } from "./env";
-import { runCalendarJob } from "./services/calendar";
+import { invalidateSettings, loadSettings } from "./engine/config";
+import { postGreeting, type GreetingType } from "./engine/greetings";
+import { checkSources, runNews } from "./engine/news";
+import { publishPost } from "./engine/publish";
+import { publishDue, runTick } from "./engine/tick";
+import { postWeekly } from "./engine/weekly";
+import { runAgenda, runEventAlerts, syncCalendar } from "./services/calendar";
+import { db } from "./supabase";
 import { createNews } from "./services/news";
 import { ValidationError, createSignal, updateSignal } from "./services/signals";
 import { getBot } from "./telegram";
@@ -124,8 +131,94 @@ export function createApp() {
     return c.json({ ok: true, news }, 201);
   });
 
-  // تُستدعى دورياً (GitHub Actions / cron-job.org) — توقظ الخدمة المجانية وتنشر المفكرة
-  api.post("/jobs/calendar", async (c) => c.json({ ok: true, ...(await runCalendarJob()) }));
+  // ===== المنشورات =====
+  // نشر الآن / الموافقة / إعادة الإرسال للأماكن التي فشلت
+  api.post("/posts/:id/publish", async (c) => {
+    const body = (await c.req.json().catch(() => ({}))) as { only_failed?: boolean; force?: boolean; approved_by?: string };
+    const post = await publishPost(c.req.param("id"), {
+      onlyFailed: Boolean(body.only_failed),
+      force: Boolean(body.force),
+      approvedBy: body.approved_by ?? null,
+    });
+    return c.json({ ok: true, post });
+  });
+
+  // ===== المهام الآلية =====
+  // تُستدعى كل 5 دقائق (cron-job.org / GitHub Actions) — توقظ الخدمة المجانية وتشغّل المستحق
+  const tick = async (c: Context) => {
+    const body = (await c.req.json().catch(() => ({}))) as { only?: string[] };
+    return c.json({ ok: true, result: await runTick(new Date(), body.only) });
+  };
+  api.post("/jobs/tick", tick);
+  api.post("/jobs/calendar", tick); // توافق مع الإصدار السابق
+
+  // تجربة فورية لأي قسم (مثل /test في Spir)
+  api.post("/test/:what", async (c) => {
+    const s = await loadSettings(true);
+    const now = new Date();
+    const what = c.req.param("what");
+    const runners: Record<string, () => Promise<unknown>> = {
+      morning: () => postGreeting("morning" as GreetingType, s, now, true),
+      open: () => postGreeting("open", s, now, true),
+      close: () => postGreeting("close", s, now, true),
+      agenda: async () => {
+        await syncCalendar(s).catch(() => undefined);
+        await db().from("posts").delete().eq("external_id", `agenda:${now.toISOString().slice(0, 10)}`).eq("status", "filtered");
+        return runAgenda(s, now);
+      },
+      weekly: () => postWeekly(s, now, true),
+      news: () => runNews(s, now),
+      calendar: () => syncCalendar(s),
+      alerts: () => runEventAlerts(s, now),
+      due: () => publishDue(now),
+    };
+    const run = runners[what];
+    if (!run) throw new ValidationError(["قسم غير معروف"]);
+    return c.json({ ok: true, result: await run() });
+  });
+
+  // ===== الحالة والفحوصات =====
+  api.get("/status", async (c) => {
+    const s = await loadSettings(true);
+    const api_ = bot.api;
+    const [me, webhook] = await Promise.all([api_.getMe().catch((e) => ({ error: String(e) })), api_.getWebhookInfo().catch(() => null)]);
+    const { data: tasks } = await db().from("task_runs").select("*").neq("task", "_tick_lock");
+    return c.json({
+      ok: true,
+      bot: me,
+      webhook: webhook && { url: webhook.url, pending: webhook.pending_update_count, last_error: webhook.last_error_message ?? null, last_error_date: webhook.last_error_date ?? null },
+      paused: s.general.paused,
+      tasks: tasks ?? [],
+      env: { prices: Boolean(env.twelveDataKey), admins: env.adminIds.size, tradingview: Boolean(env.tradingViewSecret) },
+      memory: { rss_mb: Math.round(process.memoryUsage().rss / 1048576), uptime_s: Math.round(process.uptime()) },
+    });
+  });
+
+  // يتأكد أن البوت أدمن بالقناة أو عضو بالمجموعة (وأن المجموعة فيها مواضيع إذا حددت موضوعاً)
+  api.post("/destinations/check", async (c) => {
+    const { chat_id, thread_id } = (await c.req.json()) as { chat_id: string; thread_id?: number | null };
+    try {
+      const chat = await bot.api.getChat(chat_id);
+      const me = await bot.api.getMe();
+      const member = await bot.api.getChatMember(chat_id, me.id);
+      const problems: string[] = [];
+      if (chat.type === "channel" && !(member.status === "administrator" && (member as { can_post_messages?: boolean }).can_post_messages !== false)) {
+        problems.push("البوت ليس أدمن في القناة أو لا يملك صلاحية النشر");
+      }
+      if (chat.type !== "channel" && !["administrator", "member", "creator"].includes(member.status)) problems.push("البوت ليس عضواً في المجموعة");
+      if (thread_id && !(chat as { is_forum?: boolean }).is_forum) problems.push("المجموعة لا تحتوي مواضيع (Topics)");
+      return c.json({ ok: problems.length === 0, title: (chat as { title?: string }).title ?? chat_id, type: chat.type, problems });
+    } catch (e) {
+      return c.json({ ok: false, problems: [e instanceof Error ? e.message : String(e)] });
+    }
+  });
+
+  api.get("/news/sources", async (c) => c.json({ ok: true, sources: await checkSources(await loadSettings()) }));
+
+  api.post("/settings/invalidate", (c) => {
+    invalidateSettings();
+    return c.json({ ok: true });
+  });
 
   app.route("/api", api);
   return app;

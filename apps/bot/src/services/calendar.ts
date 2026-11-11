@@ -1,7 +1,9 @@
-import { formatCalendarDigest, type CalendarEventView, type Impact } from "@qfx/shared";
-import { getEnv } from "../env";
+import {
+  eventReadingText, formatCalendarDigest, impactScore, localParts, CURRENCY_LABEL, IMPACT_ICON, IMPACT_LABEL,
+  escapeHtml, type BotSettings, type CalendarEventView, type Impact,
+} from "@qfx/shared";
+import { intake } from "../engine/intake";
 import { db } from "../supabase";
-import { postToChannel } from "../telegram";
 import { translateEventTitle } from "./calendar-translate";
 
 /** مصدر مجاني لمفكرة الأسبوع بصيغة JSON (بيانات ForexFactory) */
@@ -10,9 +12,9 @@ export const CALENDAR_FEED_URL =
 
 export interface RawCalendarEvent {
   title: string;
-  country: string; // رمز العملة مثل USD
-  date: string; // ISO مع المنطقة الزمنية
-  impact: string; // High | Medium | Low | Holiday
+  country: string;
+  date: string;
+  impact: string;
   forecast?: string;
   previous?: string;
 }
@@ -23,7 +25,6 @@ export interface CalendarEvent extends CalendarEventView {
 
 const IMPACT_MAP: Record<string, Impact | undefined> = { High: "high", Medium: "medium", Low: "low" };
 
-/** يفلتر الأحداث حسب العملات ومستوى التأثير ويترجمها */
 export function filterEvents(
   raw: RawCalendarEvent[],
   opts: { currencies: Set<string>; minImpact: "high" | "medium" },
@@ -31,11 +32,9 @@ export function filterEvents(
   const allowed: Impact[] = opts.minImpact === "medium" ? ["high", "medium"] : ["high"];
   return raw
     .map((e) => ({ e, impact: IMPACT_MAP[e.impact], time: new Date(e.date) }))
-    .filter(({ e, impact, time }) =>
-      impact !== undefined &&
-      allowed.includes(impact) &&
-      opts.currencies.has(e.country.toUpperCase()) &&
-      !Number.isNaN(time.getTime()),
+    .filter(
+      ({ e, impact, time }) =>
+        impact !== undefined && allowed.includes(impact) && opts.currencies.has(e.country.toUpperCase()) && !Number.isNaN(time.getTime()),
     )
     .map(({ e, impact, time }) => ({
       external_id: `ff:${e.country}:${e.title}:${time.toISOString()}`,
@@ -50,9 +49,8 @@ export function filterEvents(
     .sort((a, b) => a.time.getTime() - b.time.getTime());
 }
 
-/** مفتاح اليوم (YYYY-MM-DD) في منطقة زمنية معينة */
 export function dayKey(d: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  return localParts(d, timeZone).date;
 }
 
 export async function fetchCalendar(): Promise<RawCalendarEvent[]> {
@@ -63,65 +61,125 @@ export async function fetchCalendar(): Promise<RawCalendarEvent[]> {
   return json as RawCalendarEvent[];
 }
 
-/**
- * مهمة دورية: تحفظ أحداث الأسبوع المهمة في جدول news (تظهر في الموقع)،
- * وتنشر ملخص اليوم في القناة مرة واحدة فقط (الأحداث غير المنشورة).
- */
-export async function runCalendarJob(now = new Date()) {
-  const env = getEnv();
+/** مزامنة أحداث الأسبوع المهمة إلى جدول news (تظهر في الموقع وصفحة الأجندة باللوحة) */
+export async function syncCalendar(s: BotSettings) {
   const events = filterEvents(await fetchCalendar(), {
-    currencies: env.calendarCurrencies,
-    minImpact: env.calendarMinImpact,
+    currencies: new Set(s.calendar.currencies.map((c) => c.toUpperCase())),
+    minImpact: s.calendar.min_impact,
   });
-
   if (events.length) {
     const rows = events.map((e) => ({
       kind: "calendar" as const,
       title: e.title_ar,
-      body: [
-        e.title_ar.includes(e.title_en) ? null : e.title_en,
-        e.forecast ? `المتوقع: ${e.forecast}` : null,
-        e.previous ? `السابق: ${e.previous}` : null,
-      ]
-        .filter(Boolean)
-        .join(" | ") || null,
+      body:
+        [e.title_ar.includes(e.title_en) ? null : e.title_en, e.forecast ? `المتوقع: ${e.forecast}` : null, e.previous ? `السابق: ${e.previous}` : null]
+          .filter(Boolean)
+          .join(" | ") || null,
       impact: e.impact,
       currency: e.currency,
       event_time: e.time.toISOString(),
       source: "ForexFactory",
       external_id: e.external_id,
+      // العناوين الأصلية والأرقام تُحدّث في كل مزامنة
+      meta: { title_en: e.title_en, forecast: e.forecast ?? null, previous: e.previous ?? null },
     }));
-    // ignoreDuplicates: لا نعيد كتابة الأحداث الموجودة (نحافظ على حالة النشر)
-    const { error } = await db().from("news").upsert(rows, { onConflict: "external_id", ignoreDuplicates: true });
+    const { error } = await db().from("news").upsert(rows, { onConflict: "external_id" });
     if (error) throw error;
   }
+  return { stored: events.length };
+}
 
-  const today = dayKey(now, env.calendarTimeZone);
-  const todays = events.filter((e) => dayKey(e.time, env.calendarTimeZone) === today);
-  if (!todays.length) return { stored: events.length, published: 0 };
+interface CalRow {
+  external_id: string;
+  title: string;
+  currency: string;
+  impact: Impact;
+  event_time: string;
+  meta: { title_en?: string; forecast?: string | null; previous?: string | null } | null;
+}
 
-  const { data: pending, error } = await db()
+const toView = (r: CalRow): CalendarEventView => ({
+  title_ar: r.title,
+  title_en: r.meta?.title_en ?? r.title,
+  currency: r.currency,
+  impact: r.impact,
+  time: new Date(r.event_time),
+  forecast: r.meta?.forecast ?? undefined,
+  previous: r.meta?.previous ?? undefined,
+});
+
+async function eventsBetween(from: Date, to: Date): Promise<CalRow[]> {
+  const { data, error } = await db()
     .from("news")
-    .select("id, external_id")
-    .in("external_id", todays.map((e) => e.external_id))
-    .eq("published_to_telegram", false);
+    .select("external_id, title, currency, impact, event_time, meta")
+    .eq("kind", "calendar")
+    .gte("event_time", from.toISOString())
+    .lte("event_time", to.toISOString())
+    .order("event_time");
   if (error) throw error;
-  if (!pending?.length) return { stored: events.length, published: 0 };
+  return (data ?? []) as CalRow[];
+}
 
-  const pendingIds = new Set(pending.map((p) => p.external_id));
-  const toPublish = todays.filter((e) => pendingIds.has(e.external_id));
-  const dateLabel = new Intl.DateTimeFormat("ar-EG", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    timeZone: env.calendarTimeZone,
-  }).format(now);
+/** أجندة اليوم (أحداث اليوم بالتوقيت المحلي) */
+export async function runAgenda(s: BotSettings, now = new Date()) {
+  const tz = s.general.timezone;
+  const today = dayKey(now, tz);
+  const rows = (await eventsBetween(new Date(now.getTime() - 24 * 3600_000), new Date(now.getTime() + 36 * 3600_000))).filter(
+    (r) => dayKey(new Date(r.event_time), tz) === today,
+  );
+  if (!rows.length) return { events: 0, outcome: "no_events" };
+  const dateLabel = new Intl.DateTimeFormat("ar-EG", { weekday: "long", day: "numeric", month: "long", timeZone: tz }).format(now);
+  const r = await intake(
+    {
+      kind: "agenda",
+      title: `أجندة ${today}`,
+      body: formatCalendarDigest(rows.map(toView), dateLabel, tz),
+      format: "html",
+      external_id: `agenda:${today}`,
+      score: Math.max(...rows.map((x) => impactScore(x.impact))),
+      policy: "agenda",
+      skipRules: true,
+    },
+    s,
+    now,
+  );
+  return { events: rows.length, outcome: r.outcome };
+}
 
-  const messageId = await postToChannel(formatCalendarDigest(toPublish, dateLabel, env.calendarTimeZone));
-  await db()
-    .from("news")
-    .update({ published_to_telegram: true, telegram_message_id: messageId })
-    .in("id", pending.map((p) => p.id));
-
-  return { stored: events.length, published: toPublish.length };
+/** تنبيه قبل الخبر القوي بعدد دقائق، مع القراءة المعتادة للنتيجة */
+export async function runEventAlerts(s: BotSettings, now = new Date()) {
+  const rows = await eventsBetween(now, new Date(now.getTime() + s.calendar.pre_alert_min * 60_000));
+  const outcomes: string[] = [];
+  const fmt = new Intl.DateTimeFormat("ar-EG", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: s.general.timezone });
+  for (const r of rows) {
+    const v = toView(r);
+    const mins = Math.max(1, Math.round((v.time.getTime() - now.getTime()) / 60_000));
+    const lines = [
+      `⚠️ <b>بعد ${mins} دقيقة: ${escapeHtml(v.title_ar)}</b>`,
+      `${escapeHtml(CURRENCY_LABEL[v.currency] ?? v.currency)} • ${IMPACT_ICON[v.impact]} ${IMPACT_LABEL[v.impact]} • ${fmt.format(v.time)}`,
+    ];
+    const fp = [v.forecast ? `المتوقع: ${escapeHtml(v.forecast)}` : "", v.previous ? `السابق: ${escapeHtml(v.previous)}` : ""].filter(Boolean).join(" | ");
+    if (fp) lines.push(fp);
+    if (s.calendar.explain) {
+      const reading = eventReadingText(v.currency, v.title_en);
+      if (reading) lines.push("", reading, "<i>تعليمي وليس توصية.</i>");
+    }
+    const res = await intake(
+      {
+        kind: "event_alert",
+        title: v.title_ar,
+        body: lines.join("\n"),
+        format: "html",
+        external_id: `alert:${r.external_id}`,
+        score: impactScore(v.impact),
+        policy: "agenda",
+        breaking: v.impact === "high",
+        skipRules: true,
+      },
+      s,
+      now,
+    );
+    outcomes.push(res.outcome);
+  }
+  return { upcoming: rows.length, outcomes };
 }

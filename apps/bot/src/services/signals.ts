@@ -11,8 +11,35 @@ import {
   type SignalUpdateInput,
 } from "@qfx/shared";
 import { getEnv } from "../env";
+import { firstMessageId, publishPost } from "../engine/publish";
+import type { PostRow } from "../engine/types";
 import { db } from "../supabase";
-import { postToChannel } from "../telegram";
+
+/** ينشئ منشوراً للتوصية وينشره فوراً بكل أماكن النشر التي تقبل التوصيات */
+async function publishSignalPost(signalId: string, html: string, replyToPost: string | null, title: string) {
+  const { data, error } = await db()
+    .from("posts")
+    .insert({
+      kind: "signal",
+      status: "scheduled",
+      title,
+      body: html,
+      format: "html",
+      reply_to: replyToPost,
+      external_id: replyToPost ? null : `signal:${signalId}`,
+      source: "التوصيات",
+      scheduled_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return publishPost(data.id);
+}
+
+async function openingPostId(signalId: string): Promise<string | null> {
+  const { data } = await db().from("posts").select("id").eq("external_id", `signal:${signalId}`).maybeSingle();
+  return data?.id ?? null;
+}
 
 export class ValidationError extends Error {
   constructor(public errors: string[]) {
@@ -44,11 +71,19 @@ export async function createSignal(input: SignalInput): Promise<Signal> {
   if (error) throw error;
 
   try {
-    const messageId = await postToChannel(formatSignalMessage({ ...row, id: data.id }, getEnv().siteUrl));
-    await db().from("signals").update({ telegram_message_id: messageId }).eq("id", data.id);
-    data.telegram_message_id = messageId;
+    const post: PostRow = await publishSignalPost(
+      data.id,
+      formatSignalMessage({ ...row, id: data.id }, getEnv().siteUrl),
+      null,
+      `${row.direction} ${symbol}`,
+    );
+    const messageId = firstMessageId(post);
+    if (messageId) {
+      await db().from("signals").update({ telegram_message_id: messageId }).eq("id", data.id);
+      data.telegram_message_id = messageId;
+    }
   } catch (err) {
-    // التوصية محفوظة حتى لو فشل النشر في تيليجرام
+    // التوصية محفوظة حتى لو فشل النشر في تيليجرام (تظهر بسجل التدفق مع زر إعادة الإرسال)
     console.error("[signals] telegram publish failed", err);
   }
   return data;
@@ -98,7 +133,12 @@ export async function updateSignal(idOrPrefix: string, update: SignalUpdateInput
   if (error) throw error;
 
   try {
-    await postToChannel(formatSignalUpdate({ ...data, notes: update.notes ?? null }), data.telegram_message_id);
+    await publishSignalPost(
+      data.id,
+      formatSignalUpdate({ ...data, notes: update.notes ?? null }),
+      await openingPostId(data.id),
+      `تحديث ${data.symbol}: ${data.status}`,
+    );
   } catch (err) {
     console.error("[signals] telegram update failed", err);
   }
