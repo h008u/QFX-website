@@ -3,51 +3,52 @@
 @tailwind utilities;
 
 @layer base {
-  /* الوضع الفاتح (الافتراضي): أبيض نظيف + حدود رمادية رفيعة + أخضر/أحمر صريح */
+  /* نظام ألوان بأسلوب TradingView — الفاتح افتراضي */
   :root {
-    --background: 220 20% 98%; /* #F8F9FB */
-    --foreground: 240 10% 4%; /* #09090B */
+    --background: 0 0% 100%; /* #FFFFFF */
+    --foreground: 224 28% 10%; /* #131722 */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
-    --muted: 240 5% 94%;
-    --muted-foreground: 240 4% 42%;
-    --secondary: 240 5% 94%; /* #EEEEF0 */
-    --secondary-foreground: 240 10% 4%;
-    --accent: 240 5% 94%;
-    --accent-foreground: 240 10% 4%;
-    --primary: 161 94% 30%; /* #059669 — أغمق قليلاً ليقرأ على الأبيض */
+    --card-foreground: 224 28% 10%;
+    --muted: 222 50% 96%; /* #F0F3FA */
+    --muted-foreground: 227 6% 50%; /* #787B86 */
+    --secondary: 222 50% 96%;
+    --secondary-foreground: 224 28% 10%;
+    --accent: 222 50% 96%;
+    --accent-foreground: 224 28% 10%;
+    --surface: 228 56% 98%; /* #F8F9FD — خلفية الأقسام */
+    --primary: 224 100% 58%; /* #2962FF */
     --primary-foreground: 0 0% 100%;
-    --destructive: 3 78% 50%; /* #E2362B */
+    --destructive: 355 88% 58%; /* #F23645 */
     --destructive-foreground: 0 0% 100%;
-    --success: 161 94% 30%;
-    --gold: 32 95% 40%;
-    --border: 240 6% 90%; /* #E4E4E7 */
-    --input: 240 6% 86%;
-    --ring: 161 94% 30%;
-    --radius: 0.625rem;
+    --success: 170 90% 32%; /* #089981 */
+    --gold: 36 100% 50%; /* #FF9800 */
+    --border: 224 22% 90%; /* #E0E3EB */
+    --input: 224 14% 84%; /* #D1D4DC */
+    --ring: 224 100% 58%;
+    --radius: 0.5rem;
   }
 
-  /* الوضع الداكن (اختياري): أسود عميق بأسلوب تطبيقات التداول */
   .dark {
-    --background: 0 0% 4%; /* #0A0A0A */
-    --foreground: 0 0% 96%;
-    --card: 0 0% 7%; /* #121212 */
-    --card-foreground: 0 0% 96%;
-    --muted: 240 4% 12%;
-    --muted-foreground: 240 5% 62%;
-    --secondary: 240 4% 12%;
-    --secondary-foreground: 0 0% 96%;
-    --accent: 240 4% 12%;
-    --accent-foreground: 0 0% 96%;
-    --primary: 160 84% 39%; /* #10B981 */
-    --primary-foreground: 0 0% 4%;
-    --destructive: 3 100% 59%; /* #FF3B30 */
+    --background: 0 0% 6%; /* #0F0F0F */
+    --foreground: 224 14% 84%; /* #D1D4DC */
+    --card: 224 28% 10%; /* #131722 */
+    --card-foreground: 224 14% 84%;
+    --muted: 224 15% 19%; /* #2A2E39 */
+    --muted-foreground: 227 6% 50%;
+    --secondary: 224 15% 19%;
+    --secondary-foreground: 224 14% 84%;
+    --accent: 224 15% 19%;
+    --accent-foreground: 224 14% 84%;
+    --surface: 224 20% 15%; /* #1E222D */
+    --primary: 224 100% 58%;
+    --primary-foreground: 0 0% 100%;
+    --destructive: 355 88% 58%;
     --destructive-foreground: 0 0% 100%;
-    --success: 160 84% 39%;
-    --gold: 38 92% 50%;
-    --border: 240 4% 16%; /* #27272A */
-    --input: 240 4% 16%;
-    --ring: 160 84% 39%;
+    --success: 170 90% 32%;
+    --gold: 36 100% 50%;
+    --border: 224 15% 19%; /* #2A2E39 */
+    --input: 224 13% 26%;
+    --ring: 224 100% 58%;
   }
 
   * {
@@ -68,12 +69,16 @@
   }
 
   /* الأرقام والأسعار تُعرض دائماً من اليسار لليمين */
+  /* الأرقام بنفس خط الواجهة مع أرقام متساوية العرض (مثل TradingView) ومن اليسار لليمين */
   .num {
     direction: ltr;
     unicode-bidi: isolate;
-    font-family: var(--font-mono), ui-monospace, monospace;
+    font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
+  }
+
+  body {
+    font-feature-settings: "tnum" 0;
   }
 }
 
@@ -94,5 +99,24 @@
   }
   .pb-safe {
     padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+  /* شارة التغيير الملوّنة (مثل تطبيق TradingView) */
+  .chip-up {
+    @apply rounded-[4px] bg-success px-1.5 py-0.5 text-white;
+  }
+  .chip-down {
+    @apply rounded-[4px] bg-destructive px-1.5 py-0.5 text-white;
+  }
+  .text-up {
+    color: hsl(var(--success));
+  }
+  .text-down {
+    color: hsl(var(--destructive));
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

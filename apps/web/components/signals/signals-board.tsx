@@ -3,6 +3,7 @@
 import { CLOSED_STATUSES, DIRECTION_LABEL, STATUS_LABEL, type Signal } from "@qfx/shared";
 import { useMemo, useState } from "react";
 import { LiveIndicator } from "@/components/live-indicator";
+import { SymbolLogo } from "@/components/market/symbol-logo";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useRealtimeTable } from "@/lib/use-realtime";
@@ -21,7 +22,7 @@ export function SignalsBoard({ initial, demo }: { initial: Signal[]; demo: boole
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg border border-border p-1">
+        <div className="flex gap-1">
           {(
             [
               ["open", `التوصيات الحية (${open.length})`],
@@ -32,8 +33,8 @@ export function SignalsBoard({ initial, demo }: { initial: Signal[]; demo: boole
               key={key}
               onClick={() => setTab(key)}
               className={cn(
-                "rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                tab === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                "h-9 rounded-full px-4 text-sm font-semibold transition-colors",
+                tab === key ? "bg-foreground text-background" : "bg-secondary text-foreground hover:bg-input/60",
               )}
             >
               {label}
@@ -56,10 +57,10 @@ export function SignalsBoard({ initial, demo }: { initial: Signal[]; demo: boole
           </Card>
         )
       ) : (
-        <Card className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
-            <thead className="border-b border-border text-muted-foreground">
-              <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-start [&>th]:font-medium">
+        <div className="overflow-x-auto border-t border-border">
+          <table className="w-full min-w-[720px] text-[14px]">
+            <thead className="border-b border-border text-[12px] text-muted-foreground">
+              <tr className="[&>th]:px-3 [&>th]:py-2.5 [&>th]:text-start [&>th]:font-medium">
                 <th>التاريخ</th>
                 <th>الأداة</th>
                 <th>الاتجاه</th>
@@ -72,9 +73,14 @@ export function SignalsBoard({ initial, demo }: { initial: Signal[]; demo: boole
             </thead>
             <tbody>
               {history.map((s) => (
-                <tr key={s.id} className="border-b border-border/60 last:border-0 [&>td]:px-4 [&>td]:py-3">
+                <tr key={s.id} className="border-b border-border/60 hover:bg-secondary/60 [&>td]:px-3 [&>td]:py-3">
                   <td className="text-muted-foreground">{formatDateTime(s.closed_at ?? s.created_at)}</td>
-                  <td className="num font-semibold">{s.symbol}</td>
+                  <td>
+                    <span className="flex items-center gap-2">
+                      <SymbolLogo symbol={s.symbol} size={22} />
+                      <a href={`/markets?s=${s.symbol}`} className="num font-semibold hover:text-primary">{s.symbol}</a>
+                    </span>
+                  </td>
                   <td className={s.direction === "BUY" ? "text-success" : "text-destructive"}>{DIRECTION_LABEL[s.direction]}</td>
                   <td className="num">{formatPrice(s.entry_price)}</td>
                   <td className="num">{formatPrice(s.stop_loss)}</td>
@@ -105,7 +111,7 @@ export function SignalsBoard({ initial, demo }: { initial: Signal[]; demo: boole
               )}
             </tbody>
           </table>
-        </Card>
+        </div>
       )}
     </section>
   );

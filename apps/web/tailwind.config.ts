@@ -4,10 +4,11 @@ export default {
   darkMode: "class",
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
-    container: { center: true, padding: "1rem", screens: { "2xl": "1200px" } },
+    container: { center: true, padding: { DEFAULT: "1rem", md: "1.5rem" }, screens: { "2xl": "1320px" } },
     extend: {
       fontFamily: {
-        sans: ["var(--font-arabic)", "system-ui", "sans-serif"],
+        // العربية من IBM Plex Sans Arabic، واللاتينية والأرقام من خطوط النظام (نفس مكدس خطوط TradingView)
+        sans: ["var(--font-arabic)", "-apple-system", "BlinkMacSystemFont", '"Trebuchet MS"', "Roboto", "Ubuntu", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       colors: {
@@ -23,6 +24,7 @@ export default {
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
         destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
         success: "hsl(var(--success))",
+        surface: "hsl(var(--surface))",
         gold: "hsl(var(--gold))",
       },
       borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },

@@ -1,30 +1,27 @@
 import type { SignalStats } from "@qfx/shared";
-import { Activity, Percent, Target, TrendingUp } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+/** إحصائيات مسطّحة بأسلوب "Key stats": تسمية رمادية ورقم كبير، بلا بطاقات */
 export function StatsCards({ stats }: { stats: SignalStats }) {
   const items = [
-    { label: "نسبة النجاح", value: stats.win_rate === null ? "—" : `${stats.win_rate}%`, icon: Percent, tone: "text-primary" },
-    { label: "صفقات رابحة", value: `${stats.wins} / ${stats.wins + stats.losses}`, icon: Target, tone: "text-success" },
+    { label: "نسبة النجاح", value: stats.win_rate === null ? "—" : `${stats.win_rate}%`, tone: "" },
+    { label: "صفقات رابحة", value: `${stats.wins} / ${stats.wins + stats.losses}`, tone: "" },
     {
       label: "مجموع النقاط",
       value: `${stats.total_pips > 0 ? "+" : ""}${stats.total_pips}`,
-      icon: TrendingUp,
-      tone: stats.total_pips >= 0 ? "text-success" : "text-destructive",
+      tone: stats.total_pips >= 0 ? "text-up" : "text-down",
     },
-    { label: "صفقات مفتوحة", value: String(stats.open), icon: Activity, tone: "text-foreground" },
+    { label: "صفقات مفتوحة", value: String(stats.open), tone: "" },
   ];
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-x-8 lg:grid-cols-4">
       {items.map((item) => (
-        <Card key={item.label} className="p-5">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            {item.label}
-            <item.icon className={cn("h-4 w-4", item.tone)} />
-          </div>
-          <p className={cn("num mt-3 text-end text-2xl font-bold md:text-3xl", item.tone)}>{item.value}</p>
-        </Card>
+        <div key={item.label} className="border-b border-border py-4">
+          <p className="text-[13px] text-muted-foreground">{item.label}</p>
+          <p className={cn("num mt-1 text-start text-[26px] font-bold md:text-[30px]", item.tone)} style={{ textAlign: "right" }}>
+            {item.value}
+          </p>
+        </div>
       ))}
     </div>
   );

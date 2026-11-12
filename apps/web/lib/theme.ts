@@ -26,11 +26,13 @@ export function setTheme(dark: boolean) {
   } catch {
     /* التخزين غير متاح */
   }
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#0A0A0A" : "#FFFFFF");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#0F0F0F" : "#FFFFFF");
 }
 
 /** ألوان الشارتات حسب الوضع */
 export const chartPalette = (dark: boolean) =>
   dark
-    ? { up: "#10B981", down: "#FF3B30", text: "#A1A1AA", grid: "#1C1C1F", border: "#27272A", line: "#E4E4E7" }
-    : { up: "#059669", down: "#E2362B", text: "#71717A", grid: "#F1F1F3", border: "#E4E4E7", line: "#27272A" };
+    ? { up: "#089981", down: "#F23645", text: "#B2B5BE", grid: "#1E222D", border: "#2A2E39", line: "#D1D4DC", blue: "#2962FF", area: "rgba(41,98,255,0.28)" }
+    : { up: "#089981", down: "#F23645", text: "#131722", grid: "#F0F3FA", border: "#E0E3EB", line: "#131722", blue: "#2962FF", area: "rgba(41,98,255,0.18)" };
+
+export const CHART_FONT = '-apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif';

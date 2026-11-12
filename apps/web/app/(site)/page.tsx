@@ -1,194 +1,199 @@
-import {
-  BookOpen,
-  CalendarClock,
-  Headphones,
-  LineChart,
-  Percent,
-  ShieldCheck,
-  Users,
-  Zap,
-} from "lucide-react";
+import { CLOSED_STATUSES, NEWS_KIND_LABEL } from "@qfx/shared";
+import { BadgeCheck, ChevronLeft, LineChart, Percent, ShieldCheck, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { HeroSearch } from "@/components/landing/hero-search";
 import { LeadForm } from "@/components/landing/lead-form";
 import { Steps } from "@/components/landing/steps";
-import { SectionHeading } from "@/components/section-heading";
-import { PriceChart } from "@/components/markets/price-chart";
-import { StatsCards } from "@/components/signals/stats-cards";
+import { IdeaCard } from "@/components/market/idea-card";
+import { MarketSummary, type SummaryItem } from "@/components/market/market-summary";
 import { buttonVariants } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { siteConfig } from "@/config/site";
-import { getSignalStats, getSignals } from "@/lib/data";
+import { getNews, getSignalStats, getSignals } from "@/lib/data";
 import { getMarkets } from "@/lib/market-data";
-import { cn } from "@/lib/utils";
-import { CLOSED_STATUSES, DIRECTION_LABEL } from "@qfx/shared";
+import { cn, timeAgo } from "@/lib/utils";
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
-const features = [
-  { icon: ShieldCheck, title: "وسطاء مرخّصون", text: "نعمل فقط مع شركات وساطة خاضعة لجهات رقابية معروفة، وأموالك تبقى في حسابك لدى الوسيط." },
-  { icon: Percent, title: "مزايا حصرية للعملاء", text: "شروط تداول تنافسية واسترداد جزء من العمولات (Cashback) لعملاء الوكالة حسب حجم التداول." },
-  { icon: LineChart, title: "توصيات بسجل شفاف", text: "كل توصية تُسجّل بنقاط الدخول والوقف والأهداف ونتيجتها، ويمكنك مراجعة السجل كاملاً." },
-  { icon: CalendarClock, title: "أخبار المفكرة بالعربية", text: "تنبيهات آلية بأهم الأخبار عالية التأثير مترجمة للعربية قبل صدورها." },
-  { icon: Users, title: "مجتمع تداول عربي", text: "تحليلات يومية للعملات والذهب والنفط ونقاش منظم مع متداولين آخرين." },
-  { icon: Headphones, title: "دعم بالعربية", text: "مساعدة في فتح الحساب والتوثيق والإيداع والسحب عبر تيليجرام وواتساب." },
+const WHY = [
+  { icon: ShieldCheck, title: "وسطاء مرخّصون", text: "حسابك وأموالك لدى شركة وساطة خاضعة للرقابة، ونحن نرافقك بالدعم والمحتوى." },
+  { icon: Percent, title: "مزايا لعملاء الوكالة", text: "شروط تداول تنافسية واسترداد جزء من العمولات حسب حجم تداولك." },
+  { icon: LineChart, title: "توصيات بسجل حقيقي", text: "كل صفقة مسجّلة بالدخول والوقف والأهداف ونتيجتها — رابحة كانت أو خاسرة." },
+  { icon: Users, title: "مجتمع عربي", text: "تحليلات يومية ونقاش منظم حول الذهب والعملات والنفط." },
 ];
 
+function SectionTitle({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} className="group mb-6 inline-flex items-center gap-1 text-[28px] font-bold leading-tight md:text-[34px]">
+      {children}
+      <ChevronLeft className="h-7 w-7 transition-transform group-hover:-translate-x-1" />
+    </Link>
+  );
+}
+
 export default async function HomePage() {
-  const [{ data: stats, demo }, { data: signals }, markets] = await Promise.all([
-    getSignalStats(),
-    getSignals(20),
-    getMarkets(),
-  ]);
-  const hero = markets.series[0];
-  const heroSignal = signals.find((s) => s.symbol === hero?.symbol.symbol && !CLOSED_STATUSES.includes(s.status));
-  const heroLines = heroSignal
-    ? [
-        { price: Number(heroSignal.entry_price), title: `${DIRECTION_LABEL[heroSignal.direction]}`, kind: "entry" as const },
-        { price: Number(heroSignal.stop_loss), title: "SL", kind: "sl" as const },
-        { price: Number(heroSignal.take_profit_1), title: "TP1", kind: "tp" as const },
-      ]
-    : [];
+  const [{ series, demo }, { data: signals }, { data: stats }, { data: news }] = await Promise.all([getMarkets(), getSignals(12), getSignalStats(), getNews(8)]);
+  const items: SummaryItem[] = series.map((s) => ({
+    symbol: s.meta.symbol,
+    name: s.meta.name,
+    category: s.meta.category,
+    digits: s.meta.digits,
+    last: s.last,
+    change: s.change,
+    changePct: s.changePct,
+    candles: s.candles.slice(-300),
+    spark: s.candles.slice(-48).map((c) => c.close),
+  }));
+  const bySym = new Map(series.map((s) => [s.meta.symbol, s]));
+  const ideas = signals.slice(0, 6);
 
   return (
     <>
-      {/* ===== Hero ===== */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
-        <div className="container relative grid items-center gap-12 py-20 md:py-28 lg:grid-cols-2">
-          <div className="animate-fade-in">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Zap className="h-3.5 w-3.5" /> وكيل معرّف (IB) معتمد
-            </span>
-            <h1 className="mt-5 text-4xl font-black leading-[1.3] md:text-6xl md:leading-[1.25]">
-              تداول بثقة مع <span className="text-gradient">وسيط مرخّص</span> ومجتمع يدعمك
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">{siteConfig.description}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={buttonVariants({ size: "lg" })}>
-                افتح حسابك الآن
-              </a>
-              <Link href="/signals" className={buttonVariants({ size: "lg", variant: "outline" })}>
-                شاهد سجل التوصيات
-              </Link>
-            </div>
-            <p className="mt-4 text-xs text-muted-foreground">التداول ينطوي على مخاطر عالية وقد تخسر رأس مالك.</p>
+      {/* ===== البطل: خلفية داكنة وعنوان ضخم وبحث كبير ===== */}
+      <section className="relative overflow-hidden bg-[#0F0F0F] text-white">
+        <svg className="absolute inset-0 h-full w-full opacity-60" viewBox="0 0 1440 640" preserveAspectRatio="none" aria-hidden>
+          <defs>
+            <linearGradient id="hero-g" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="#2962FF" stopOpacity="0.35" />
+              <stop offset="1" stopColor="#2962FF" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M0 520 L120 470 L220 495 L340 400 L460 430 L580 330 L700 360 L820 250 L940 290 L1060 190 L1180 220 L1300 120 L1440 150 L1440 640 L0 640Z" fill="url(#hero-g)" />
+          <path d="M0 520 L120 470 L220 495 L340 400 L460 430 L580 330 L700 360 L820 250 L940 290 L1060 190 L1180 220 L1300 120 L1440 150" fill="none" stroke="#2962FF" strokeWidth="2.5" />
+        </svg>
+        <div className="container relative flex min-h-[560px] flex-col justify-center py-20 md:min-h-[640px]">
+          <h1 className="max-w-4xl text-[52px] font-black leading-[1.12] tracking-tight md:text-[88px]">
+            حلّل أولاً.
+            <br />
+            <span className="text-[#5B8DEF]">ثم تداول بثقة.</span>
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-8 text-[#D1D4DC] md:text-xl">{siteConfig.description}</p>
+          <div className="mt-10">
+            <HeroSearch />
           </div>
-          {hero && (
-            <Link href="/markets" className="block rounded-lg border border-border bg-card transition-colors hover:border-zinc-400 dark:hover:border-zinc-600">
-              <div className="flex items-end justify-between border-b border-border p-4">
-                <div>
-                  <p className="num text-lg font-bold">{hero.symbol.symbol}</p>
-                  <p className="text-xs text-muted-foreground">{hero.symbol.name}</p>
-                </div>
-                <div className="text-end">
-                  <p className={cn("num text-xl font-bold", hero.changePct >= 0 ? "text-success" : "text-destructive")}>
-                    {hero.last.toFixed(hero.symbol.digits)}
-                  </p>
-                  <p className={cn("num text-xs", hero.changePct >= 0 ? "text-success" : "text-destructive")}>
-                    {hero.changePct >= 0 ? "+" : ""}
-                    {hero.changePct.toFixed(2)}%
-                  </p>
-                </div>
-              </div>
-              <div className="p-2">
-                <PriceChart candles={hero.candles.slice(-80)} digits={hero.symbol.digits} lines={heroLines} height={300} />
-              </div>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={buttonVariants({ size: "pill" })}>
+              افتح حسابك عبر الوكالة
+            </a>
+            <Link href="/signals" className="inline-flex h-11 items-center rounded-full px-6 text-[15px] font-semibold text-white ring-1 ring-white/30 hover:bg-white/10">
+              سجل التوصيات
             </Link>
-          )}
+          </div>
+          <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-white/15 pt-6">
+            {[
+              [stats.win_rate === null ? "—" : `${stats.win_rate}%`, "نسبة نجاح التوصيات"],
+              [`${stats.total_pips > 0 ? "+" : ""}${stats.total_pips}`, "مجموع النقاط"],
+              [String(stats.total), "توصية منشورة"],
+            ].map(([v, l]) => (
+              <div key={l}>
+                <dt className="text-xs text-[#9598A1] md:text-sm">{l}</dt>
+                <dd className="num mt-1 text-2xl font-bold md:text-3xl">{v}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
-      {/* ===== Ticker ===== */}
-      <div className="border-b border-border bg-card">
-        <div className="container flex gap-8 overflow-x-auto py-3" dir="ltr">
-          {markets.series.map((m) => (
-            <Link key={m.symbol.symbol} href="/markets" className="num flex shrink-0 items-center gap-2 text-sm">
-              <span className="font-semibold">{m.symbol.symbol}</span>
-              <span>{m.last.toFixed(m.symbol.digits)}</span>
-              <span className={m.changePct >= 0 ? "text-success" : "text-destructive"}>
-                {m.changePct >= 0 ? "+" : ""}
-                {m.changePct.toFixed(2)}%
-              </span>
-            </Link>
-          ))}
+      <div className="container space-y-20 py-14 md:space-y-24 md:py-20">
+        <div>
+          <MarketSummary items={items} />
+          {demo && <p className="mt-3 text-xs text-muted-foreground">أسعار توضيحية — تظهر الأسعار الحقيقية بعد إضافة مفتاح البيانات.</p>}
         </div>
-      </div>
 
-      {/* ===== Stats ===== */}
-      <section className="container relative z-10 mt-12">
-        <StatsCards stats={stats} />
-        {demo && <p className="mt-2 text-center text-xs text-gold">أرقام توضيحية — تظهر الأرقام الحقيقية بعد ربط قاعدة البيانات.</p>}
-      </section>
+        {/* ===== التوصيات بشكل بطاقات الأفكار ===== */}
+        <section>
+          <SectionTitle href="/signals">أحدث التوصيات</SectionTitle>
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {ideas.map((s) => {
+              const m = bySym.get(s.symbol);
+              return <IdeaCard key={s.id} signal={s} spark={(m?.candles ?? []).slice(-60).map((c) => c.close)} digits={m?.meta.digits ?? 5} />;
+            })}
+          </div>
+        </section>
 
-      {/* ===== Partners ===== */}
-      <section className="container mt-20">
-        <Card className="flex flex-col items-center justify-between gap-6 p-8 md:flex-row">
+        {/* ===== أهم الأخبار ===== */}
+        <section className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div>
+            <SectionTitle href="/feed">أهم الأخبار والتحليلات</SectionTitle>
+            <ul className="divide-y divide-border border-y border-border">
+              {news.map((n) => (
+                <li key={n.id}>
+                  <Link href="/feed" className="group flex gap-4 py-4">
+                    <span className="w-24 shrink-0 pt-0.5 text-xs text-muted-foreground">{timeAgo(n.created_at)}</span>
+                    <span className="min-w-0">
+                      <span className="block text-[17px] font-semibold leading-7 group-hover:text-primary">{n.title}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        {NEWS_KIND_LABEL[n.kind]}
+                        {n.currency ? ` • ${n.currency}` : ""}
+                        {n.impact === "high" ? " • 🔴 تأثير مرتفع" : ""}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <aside className="rounded-2xl bg-[#131722] p-8 text-white lg:self-start">
+            <Zap className="h-8 w-8 text-[#5B8DEF]" />
+            <p className="mt-4 text-2xl font-bold leading-snug">التوصيات والأخبار القوية تصلك على تيليجرام فور صدورها</p>
+            <p className="mt-3 text-sm leading-7 text-[#B2B5BE]">تنبيه قبل الخبر الاقتصادي القوي، وأجندة يومية، وتحديثات الصفقات كرد على رسالتها.</p>
+            <a href={siteConfig.telegramUrl} target="_blank" rel="noopener" className={cn(buttonVariants({ size: "pill" }), "mt-6")}>
+              انضم للقناة
+            </a>
+          </aside>
+        </section>
+
+        {/* ===== لماذا الوكالة ===== */}
+        <section>
+          <h2 className="mb-8 text-[28px] font-bold md:text-[34px]">لماذا تتداول عبر QFX؟</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {WHY.map((w) => (
+              <div key={w.title} className="rounded-2xl bg-surface p-6">
+                <w.icon className="h-7 w-7 text-primary" />
+                <p className="mt-5 text-lg font-bold">{w.title}</p>
+                <p className="mt-2 text-[15px] leading-7 text-muted-foreground">{w.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 rounded-2xl border border-border p-6 md:p-8">
             <p className="text-sm font-semibold text-primary">شريكنا في الوساطة</p>
-            <h2 className="mt-1 text-2xl font-bold">{siteConfig.brokerName}</h2>
-            <p className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">
-              نحن وكيل معرّف (Introducing Broker): نُعرّفك على الوسيط ونرافقك بالدعم والتعليم والتوصيات، بينما يتولى الوسيط المرخّص
-              حفظ الأموال وتنفيذ الصفقات. لا نطلب منك أبداً إرسال أموال إلينا.
+            <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <p className="text-2xl font-bold">{siteConfig.brokerName}</p>
+              <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={buttonVariants({ size: "pill", variant: "gold" })}>
+                التسجيل عبر رابط الوكالة
+              </a>
+            </div>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
+              نحن وكيل معرّف: نعرّفك على الوسيط ونرافقك بالدعم والتعليم والتوصيات، بينما يتولى الوسيط المرخّص حفظ الأموال وتنفيذ الصفقات. لا نطلب منك أبداً إرسال أموال إلينا.
             </p>
           </div>
-          <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={cn(buttonVariants({ variant: "gold", size: "lg" }), "shrink-0")}>
-            التسجيل عبر رابط الوكالة
-          </a>
-        </Card>
-      </section>
+        </section>
 
-      {/* ===== Features ===== */}
-      <section className="container mt-24">
-        <SectionHeading eyebrow="لماذا QFX؟" title="مميزات الانضمام تحت وكالتنا" text="كل ما تحتاجه لتبدأ التداول بشكل منظم، في مكان واحد وبلغتك." />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => (
-            <Card key={f.title} className="p-6 transition-colors hover:border-primary/50">
-              <f.icon className="h-8 w-8 text-primary" />
-              <h3 className="mt-4 text-lg font-bold">{f.title}</h3>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">{f.text}</p>
-            </Card>
-          ))}
-        </div>
-      </section>
+        <section>
+          <h2 className="mb-8 text-[28px] font-bold md:text-[34px]">انضم في أربع خطوات</h2>
+          <Steps />
+        </section>
 
-      {/* ===== How it works ===== */}
-      <section className="container mt-24">
-        <SectionHeading eyebrow="كيف نعمل" title="أربع خطوات للانضمام" />
-        <Steps />
-        <div className="mt-8 text-center">
-          <Link href="/how-it-works" className={buttonVariants({ variant: "outline" })}>
-            <BookOpen className="h-4 w-4" /> التفاصيل والأسئلة الشائعة
-          </Link>
-        </div>
-      </section>
-
-      {/* ===== CTA + Lead form ===== */}
-      <section id="join" className="container mt-24 scroll-mt-24">
-        <div className="grid overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/15 via-card to-card lg:grid-cols-2">
-          <div className="p-8 md:p-12">
-            <h2 className="text-3xl font-bold leading-tight">جاهز للانضمام؟</h2>
-            <p className="mt-4 leading-8 text-muted-foreground">
-              سجّل حسابك عبر رابط الوكالة، ثم أرسل بياناتك لنفعّل اشتراكك في قناة العملاء. يمكنك أيضاً متابعة قناتنا العامة على
-              تيليجرام مجاناً.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={buttonVariants({ size: "lg" })}>
+        {/* ===== الانضمام ===== */}
+        <section id="join" className="scroll-mt-24">
+          <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-border lg:grid-cols-2">
+            <div className="bg-[#131722] p-8 text-white md:p-12">
+              <BadgeCheck className="h-9 w-9 text-[#5B8DEF]" />
+              <h2 className="mt-5 text-3xl font-bold leading-tight md:text-4xl">جاهز للانضمام؟</h2>
+              <p className="mt-4 leading-8 text-[#B2B5BE]">سجّل حسابك عبر رابط الوكالة، ثم أرسل بياناتك لنفعّل اشتراكك في قناة العملاء.</p>
+              <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={cn(buttonVariants({ size: "pill" }), "mt-8")}>
                 1. افتح الحساب
               </a>
-              <a href={siteConfig.telegramUrl} target="_blank" rel="noopener" className={buttonVariants({ size: "lg", variant: "outline" })}>
-                القناة العامة على تيليجرام
-              </a>
+            </div>
+            <div className="p-8 md:p-12">
+              <h3 className="mb-6 text-xl font-bold">2. أرسل بيانات التفعيل</h3>
+              <Suspense>
+                <LeadForm />
+              </Suspense>
             </div>
           </div>
-          <div className="border-t border-border bg-background/40 p-8 md:p-12 lg:border-s lg:border-t-0">
-            <h3 className="mb-6 text-xl font-bold">2. أرسل بيانات التفعيل</h3>
-            <Suspense>
-              <LeadForm />
-            </Suspense>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </>
   );
 }

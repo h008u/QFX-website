@@ -14,7 +14,6 @@ import { useMemo, useState } from "react";
 import { CommentThread } from "@/components/community/comment-thread";
 import { LiveIndicator } from "@/components/live-indicator";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { useRealtimeTable } from "@/lib/use-realtime";
 import { cn, formatDateTime, timeAgo } from "@/lib/utils";
 
@@ -32,7 +31,7 @@ const KIND_ICON = { news: Newspaper, analysis: BarChart3, calendar: CalendarCloc
 function Post({ item }: { item: NewsItem }) {
   const Icon = KIND_ICON[item.kind];
   return (
-    <Card className="animate-fade-in p-4">
+    <article className="animate-fade-in border-b border-border py-5">
       <div className="flex gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
           <Icon className="h-5 w-5" />
@@ -45,7 +44,7 @@ function Post({ item }: { item: NewsItem }) {
               {timeAgo(item.created_at)}
             </time>
           </div>
-          <h3 className="mt-1 font-bold leading-7">{item.title}</h3>
+          <h3 className="mt-1 text-[17px] font-bold leading-7">{item.title}</h3>
           {item.body && <p className="mt-1 whitespace-pre-line text-sm leading-7 text-muted-foreground">{item.body}</p>}
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="info">{NEWS_KIND_LABEL[item.kind]}</Badge>
@@ -71,7 +70,7 @@ function Post({ item }: { item: NewsItem }) {
           <CommentThread target="news" targetId={item.id} />
         </div>
       </div>
-    </Card>
+    </article>
   );
 }
 
@@ -88,16 +87,14 @@ export function CommunityFeed({ initial, demo }: { initial: NewsItem[]; demo: bo
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
           {FILTERS.map((f) => (
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
               className={cn(
-                "rounded-full border px-4 py-1.5 text-sm transition-colors",
-                filter === f.key
-                  ? "border-primary bg-primary/15 text-primary"
-                  : "border-border text-muted-foreground hover:text-foreground",
+                "h-9 shrink-0 rounded-full px-4 text-sm font-semibold transition-colors",
+                filter === f.key ? "bg-foreground text-background" : "bg-secondary text-foreground hover:bg-input/60",
               )}
             >
               {f.label}
@@ -106,11 +103,11 @@ export function CommunityFeed({ initial, demo }: { initial: NewsItem[]; demo: bo
         </div>
         <LiveIndicator live={live} demo={demo} />
       </div>
-      <div className="space-y-3">
+      <div className="border-t border-border">
         {items.map((item) => (
           <Post key={item.id} item={item} />
         ))}
-        {!items.length && <Card className="p-10 text-center text-muted-foreground">لا توجد منشورات في هذا القسم بعد.</Card>}
+        {!items.length && <p className="p-10 text-center text-muted-foreground">لا توجد منشورات في هذا القسم بعد.</p>}
       </div>
     </div>
   );

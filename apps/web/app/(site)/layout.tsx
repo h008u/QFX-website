@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="pb-20 md:pb-0">
+    <div className="pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
       <SiteHeader />
       <main>{children}</main>
       <SiteFooter />

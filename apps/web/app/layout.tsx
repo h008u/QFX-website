@@ -4,8 +4,9 @@ import { siteConfig } from "@/config/site";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-script";
 import "./globals.css";
 
+// الحروف العربية فقط من Plex؛ اللاتينية والأرقام تسقط لخطوط النظام (مكدس TradingView)
 const font = IBM_Plex_Sans_Arabic({
-  subsets: ["arabic", "latin"],
+  subsets: ["arabic"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-arabic",
   display: "swap",
