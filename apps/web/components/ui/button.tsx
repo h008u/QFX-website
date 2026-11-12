@@ -7,7 +7,7 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-[#1E53E5]",
+        default: "btn-primary bg-primary text-primary-foreground hover:bg-primary/90",
         // زر محايد عالي التباين (أبيض على أسود)
         gold: "bg-foreground text-background hover:bg-foreground/90",
         outline: "border border-input bg-transparent hover:bg-secondary",
@@ -18,7 +18,7 @@ export const buttonVariants = cva(
         default: "h-10 px-4 py-2",
         sm: "h-9 px-3",
         lg: "h-12 px-6 text-base",
-        pill: "h-11 rounded-full px-6 text-[15px]",
+        pill: "h-11 rounded-pill px-6 text-[15px]",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

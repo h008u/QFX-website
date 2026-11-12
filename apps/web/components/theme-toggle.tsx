@@ -12,7 +12,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={() => setTheme(!dark)}
       aria-label={dark ? "الوضع الفاتح" : "الوضع الداكن"}
       title={dark ? "الوضع الفاتح" : "الوضع الداكن"}
-      className={cn("rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground", className)}
+      className={cn("theme-toggle rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground", className)}
     >
       {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </button>

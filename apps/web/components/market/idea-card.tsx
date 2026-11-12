@@ -26,9 +26,9 @@ export function IdeaCard({ signal, spark, digits }: { signal: Signal; spark: num
             <line key={g} x1="0" x2={W} y1={H * g} y2={H * g} stroke="hsl(var(--border))" strokeWidth="1" />
           ))}
           <path d={path} fill="none" stroke="hsl(var(--foreground))" strokeWidth="1.6" opacity="0.8" />
-          {tp && <rect x={W - 60} y={Math.min(y(tp), y(entry))} width="60" height={Math.abs(y(tp) - y(entry))} fill="#089981" opacity="0.18" />}
-          {sl && <rect x={W - 60} y={Math.min(y(sl), y(entry))} width="60" height={Math.abs(y(sl) - y(entry))} fill="#F23645" opacity="0.18" />}
-          <line x1={W - 60} x2={W} y1={y(entry)} y2={y(entry)} stroke="#2962FF" strokeWidth="2" />
+          {tp && <rect x={W - 60} y={Math.min(y(tp), y(entry))} width="60" height={Math.abs(y(tp) - y(entry))} fill="var(--chart-up)" opacity="0.18" />}
+          {sl && <rect x={W - 60} y={Math.min(y(sl), y(entry))} width="60" height={Math.abs(y(sl) - y(entry))} fill="var(--chart-down)" opacity="0.18" />}
+          <line x1={W - 60} x2={W} y1={y(entry)} y2={y(entry)} stroke="var(--chart-accent)" strokeWidth="2" />
         </svg>
         <span className={cn("absolute end-3 top-3 rounded px-2 py-0.5 text-xs font-bold text-white", buy ? "bg-success" : "bg-destructive")}>
           {DIRECTION_LABEL[signal.direction]}

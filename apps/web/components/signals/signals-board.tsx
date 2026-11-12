@@ -33,7 +33,7 @@ export function SignalsBoard({ initial, demo }: { initial: Signal[]; demo: boole
               key={key}
               onClick={() => setTab(key)}
               className={cn(
-                "h-9 rounded-full px-4 text-sm font-semibold transition-colors",
+                "h-9 rounded-pill px-4 text-sm font-semibold transition-colors",
                 tab === key ? "bg-foreground text-background" : "bg-secondary text-foreground hover:bg-input/60",
               )}
             >

@@ -8,8 +8,8 @@ export default {
     extend: {
       fontFamily: {
         // العربية من IBM Plex Sans Arabic، واللاتينية والأرقام من خطوط النظام (نفس مكدس خطوط TradingView)
-        sans: ["var(--font-arabic)", "-apple-system", "BlinkMacSystemFont", '"Trebuchet MS"', "Roboto", "Ubuntu", "sans-serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
+        sans: ["var(--font-body)", "-apple-system", "BlinkMacSystemFont", '"Trebuchet MS"', "Roboto", "Ubuntu", "sans-serif"],
+        mono: ["var(--f-jet)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -26,8 +26,20 @@ export default {
         success: "hsl(var(--success))",
         surface: "hsl(var(--surface))",
         gold: "hsl(var(--gold))",
+        panel: {
+          DEFAULT: "hsl(var(--panel) / <alpha-value>)",
+          foreground: "hsl(var(--panel-foreground) / <alpha-value>)",
+          muted: "hsl(var(--panel-muted) / <alpha-value>)",
+          accent: "hsl(var(--panel-accent) / <alpha-value>)",
+        },
+        hero: {
+          DEFAULT: "hsl(var(--hero) / <alpha-value>)",
+          foreground: "hsl(var(--hero-foreground) / <alpha-value>)",
+          muted: "hsl(var(--hero-muted) / <alpha-value>)",
+          accent: "hsl(var(--hero-accent) / <alpha-value>)",
+        },
       },
-      borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
+      borderRadius: { pill: "var(--pill)", lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
       keyframes: {
         "fade-in": { from: { opacity: "0", transform: "translateY(6px)" }, to: { opacity: "1", transform: "none" } },
         pulse_dot: { "0%,100%": { opacity: "1" }, "50%": { opacity: ".3" } },

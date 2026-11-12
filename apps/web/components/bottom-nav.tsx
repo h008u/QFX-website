@@ -49,14 +49,14 @@ function Tabs() {
                 {label}
               </Link>
             ))}
-            <div className="mt-2 flex items-center justify-between border-t border-border px-2 pt-3 text-sm">
+            <div className="theme-toggle mt-2 flex items-center justify-between border-t border-border px-2 pt-3 text-sm">
               الوضع الداكن
               <ThemeToggle />
             </div>
           </div>
         </div>
       )}
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background md:hidden" aria-label="التنقل السفلي">
+      <nav className="app-tabbar pb-safe fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background md:hidden" aria-label="التنقل السفلي">
         <ul className="grid h-14 grid-cols-5">
           {items.map(({ href, label, icon: Icon, active }) => (
             <li key={href}>

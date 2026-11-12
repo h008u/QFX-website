@@ -6,7 +6,7 @@ import {
 } from "lightweight-charts";
 import { CandlestickChart, ChartLine, ChartNoAxesColumn, Maximize2, Minimize2, Spline } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CHART_FONT, chartPalette, useIsDark } from "@/lib/theme";
+import { chartFont, chartPalette, useIsDark } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { fmtPrice } from "./price";
 
@@ -83,7 +83,7 @@ export function AdvancedChart({
     const C = chartPalette(dark);
     const chart = createChart(box.current, {
       autoSize: true,
-      layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: C.text, fontFamily: CHART_FONT, fontSize: 12, attributionLogo: true },
+      layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: C.text, fontFamily: chartFont(), fontSize: 12, attributionLogo: true },
       grid: { vertLines: { color: C.grid }, horzLines: { color: C.grid } },
       rightPriceScale: { borderColor: C.border, scaleMargins: { top: 0.12, bottom: 0.08 } },
       timeScale: { borderColor: C.border, timeVisible: true, secondsVisible: false, rightOffset: 6, barSpacing: 8 },

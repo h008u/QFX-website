@@ -84,7 +84,7 @@ export function SymbolSearch() {
         </div>
         <div className="scrollbar-none flex gap-2 overflow-x-auto px-5 py-3">
           {TABS.map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={cn("h-8 shrink-0 rounded-full px-4 text-sm font-medium transition-colors", tab === t ? "bg-foreground text-background" : "bg-secondary text-foreground hover:bg-input/60")}>
+            <button key={t} onClick={() => setTab(t)} className={cn("h-8 shrink-0 rounded-pill px-4 text-sm font-medium transition-colors", tab === t ? "bg-foreground text-background" : "bg-secondary text-foreground hover:bg-input/60")}>
               {t === "all" ? "الكل" : CATEGORY_LABEL[t]}
             </button>
           ))}

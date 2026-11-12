@@ -1,0 +1,257 @@
+/* مُولّد آلياً من scripts/gen-themes.py — لا تعدّله يدوياً */
+
+:root,
+[data-theme="classic"] {
+  --background: 0 0% 100%;
+  --foreground: 224 28% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 28% 10%;
+  --muted: 222 50% 96%;
+  --muted-foreground: 227 6% 50%;
+  --secondary: 222 50% 96%;
+  --secondary-foreground: 224 28% 10%;
+  --accent: 222 50% 96%;
+  --accent-foreground: 224 28% 10%;
+  --surface: 228 56% 98%;
+  --primary: 224 100% 58%;
+  --primary-foreground: 0 0% 100%;
+  --destructive: 355 88% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 170 90% 32%;
+  --gold: 36 100% 50%;
+  --border: 224 22% 90%;
+  --input: 224 14% 84%;
+  --ring: 224 100% 58%;
+  --hero: 0 0% 6%;
+  --hero-foreground: 0 0% 100%;
+  --hero-muted: 225 6% 61%;
+  --hero-accent: 220 82% 65%;
+  --radius: 0.5rem;
+  --pill: 9999px;
+  --font-body: var(--f-plex);
+  --font-display: var(--f-plex);
+  --font-num: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
+  --chart-up: #089981;
+  --chart-down: #F23645;
+  --chart-accent: #2962FF;
+  --panel: 224 28% 10%;
+  --panel-foreground: 0 0% 100%;
+  --panel-muted: 225 8% 72%;
+  --panel-accent: 220 82% 65%;
+}
+
+.dark,
+[data-theme="classic"].dark {
+  --background: 0 0% 6%;
+  --foreground: 224 14% 84%;
+  --card: 224 28% 10%;
+  --card-foreground: 224 14% 84%;
+  --muted: 224 15% 19%;
+  --muted-foreground: 227 6% 50%;
+  --secondary: 224 15% 19%;
+  --secondary-foreground: 224 14% 84%;
+  --accent: 224 15% 19%;
+  --accent-foreground: 224 14% 84%;
+  --surface: 224 20% 15%;
+  --primary: 224 100% 58%;
+  --primary-foreground: 0 0% 100%;
+  --destructive: 355 88% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 170 90% 32%;
+  --gold: 36 100% 50%;
+  --border: 224 15% 19%;
+  --input: 224 12% 24%;
+  --ring: 224 100% 58%;
+  --hero: 224 28% 10%;
+  --hero-foreground: 0 0% 100%;
+  --hero-muted: 225 6% 61%;
+  --hero-accent: 220 82% 65%;
+}
+
+[data-theme="institutional"] {
+  --background: 60 23% 97%;
+  --foreground: 221 51% 16%;
+  --card: 0 0% 100%;
+  --card-foreground: 221 51% 16%;
+  --muted: 60 15% 94%;
+  --muted-foreground: 220 9% 46%;
+  --secondary: 220 21% 95%;
+  --secondary-foreground: 221 51% 16%;
+  --accent: 220 21% 95%;
+  --accent-foreground: 221 51% 16%;
+  --surface: 60 19% 95%;
+  --primary: 218 74% 15%;
+  --primary-foreground: 0 0% 100%;
+  --destructive: 353 67% 47%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 160 85% 29%;
+  --gold: 43 59% 45%;
+  --border: 220 13% 91%;
+  --input: 216 12% 84%;
+  --ring: 218 74% 15%;
+  --hero: 0 0% 100%;
+  --hero-foreground: 218 74% 15%;
+  --hero-muted: 215 14% 34%;
+  --hero-accent: 43 59% 45%;
+  --radius: 0.125rem;
+  --pill: 0.125rem;
+  --font-body: var(--f-plex);
+  --font-display: var(--f-kufi);
+  --font-num: var(--f-plexmono), ui-monospace, monospace;
+  --chart-up: #0B8A5F;
+  --chart-down: #C8283A;
+  --chart-accent: #0A1F44;
+  --panel: 218 74% 15%;
+  --panel-foreground: 0 0% 100%;
+  --panel-muted: 219 27% 81%;
+  --panel-accent: 43 59% 59%;
+}
+
+[data-theme="institutional"].dark {
+  --background: 221 53% 9%;
+  --foreground: 218 27% 92%;
+  --card: 221 48% 13%;
+  --card-foreground: 218 27% 92%;
+  --muted: 223 42% 18%;
+  --muted-foreground: 219 16% 61%;
+  --secondary: 223 42% 18%;
+  --secondary-foreground: 218 27% 92%;
+  --accent: 223 42% 18%;
+  --accent-foreground: 218 27% 92%;
+  --surface: 220 48% 12%;
+  --primary: 43 54% 54%;
+  --primary-foreground: 221 53% 9%;
+  --destructive: 358 75% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 158 68% 41%;
+  --gold: 43 54% 54%;
+  --border: 220 39% 22%;
+  --input: 221 35% 27%;
+  --ring: 43 54% 54%;
+  --hero: 222 55% 12%;
+  --hero-foreground: 220 33% 96%;
+  --hero-muted: 219 16% 61%;
+  --hero-accent: 43 54% 54%;
+  --chart-accent: #C9A54A;
+  --panel: 221 48% 13%;
+}
+
+[data-theme="terminal"],
+[data-theme="terminal"].dark {
+  --background: 220 30% 4%;
+  --foreground: 210 17% 82%;
+  --card: 216 26% 7%;
+  --card-foreground: 210 17% 82%;
+  --muted: 216 28% 10%;
+  --muted-foreground: 216 11% 47%;
+  --secondary: 216 28% 10%;
+  --secondary-foreground: 210 17% 82%;
+  --accent: 216 28% 10%;
+  --accent-foreground: 210 17% 82%;
+  --surface: 220 29% 6%;
+  --primary: 37 91% 55%;
+  --primary-foreground: 0 0% 0%;
+  --destructive: 350 100% 62%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 157 100% 38%;
+  --gold: 37 91% 55%;
+  --border: 218 25% 15%;
+  --input: 221 24% 21%;
+  --ring: 37 91% 55%;
+  --hero: 216 26% 7%;
+  --hero-foreground: 0 0% 100%;
+  --hero-muted: 216 11% 47%;
+  --hero-accent: 37 91% 55%;
+  --radius: 0.25rem;
+  --pill: 0.25rem;
+  --font-body: var(--f-plex);
+  --font-display: var(--f-plex);
+  --font-num: var(--f-jet), ui-monospace, monospace;
+  --chart-up: #00C176;
+  --chart-down: #FF3B5C;
+  --chart-accent: #F5A524;
+  --panel: 216 26% 7%;
+  --panel-foreground: 0 0% 100%;
+  --panel-muted: 217 13% 60%;
+  --panel-accent: 37 91% 55%;
+}
+
+[data-theme="neon"],
+[data-theme="neon"].dark {
+  --background: 232 57% 5%;
+  --foreground: 224 43% 93%;
+  --card: 231 55% 12%;
+  --card-foreground: 224 43% 93%;
+  --muted: 231 49% 15%;
+  --muted-foreground: 227 21% 62%;
+  --secondary: 231 47% 16%;
+  --secondary-foreground: 224 43% 93%;
+  --accent: 231 47% 16%;
+  --accent-foreground: 224 43% 93%;
+  --surface: 231 54% 10%;
+  --primary: 234 100% 68%;
+  --primary-foreground: 0 0% 100%;
+  --destructive: 349 100% 68%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 159 79% 54%;
+  --gold: 188 86% 53%;
+  --border: 232 45% 22%;
+  --input: 232 40% 28%;
+  --ring: 234 100% 68%;
+  --hero: 232 57% 5%;
+  --hero-foreground: 0 0% 100%;
+  --hero-muted: 227 21% 62%;
+  --hero-accent: 188 86% 53%;
+  --radius: 1rem;
+  --pill: 9999px;
+  --font-body: var(--f-readex);
+  --font-display: var(--f-readex);
+  --font-num: var(--f-grotesk), var(--f-readex), sans-serif;
+  --chart-up: #2EE6A6;
+  --chart-down: #FF5C7A;
+  --chart-accent: #5B6CFF;
+  --panel: 231 55% 12%;
+  --panel-foreground: 0 0% 100%;
+  --panel-muted: 227 25% 71%;
+  --panel-accent: 188 86% 53%;
+}
+
+[data-theme="luxe"],
+[data-theme="luxe"].dark {
+  --background: 40 18% 3%;
+  --foreground: 42 39% 88%;
+  --card: 40 19% 6%;
+  --card-foreground: 42 39% 88%;
+  --muted: 40 19% 9%;
+  --muted-foreground: 43 9% 50%;
+  --secondary: 40 19% 9%;
+  --secondary-foreground: 42 39% 88%;
+  --accent: 40 19% 9%;
+  --accent-foreground: 42 39% 88%;
+  --surface: 36 19% 5%;
+  --primary: 46 65% 52%;
+  --primary-foreground: 40 53% 7%;
+  --destructive: 358 75% 59%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 151 50% 53%;
+  --gold: 46 65% 52%;
+  --border: 40 22% 14%;
+  --input: 39 21% 19%;
+  --ring: 46 65% 52%;
+  --hero: 40 18% 3%;
+  --hero-foreground: 42 39% 88%;
+  --hero-muted: 43 9% 50%;
+  --hero-accent: 46 65% 52%;
+  --radius: 0.125rem;
+  --pill: 0.125rem;
+  --font-body: var(--f-tajawal);
+  --font-display: var(--f-messiri);
+  --font-num: var(--f-inter), sans-serif;
+  --chart-up: #4CC38A;
+  --chart-down: #E5484D;
+  --chart-accent: #D4AF37;
+  --panel: 40 19% 6%;
+  --panel-foreground: 42 39% 88%;
+  --panel-muted: 43 13% 58%;
+  --panel-accent: 46 65% 52%;
+}

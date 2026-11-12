@@ -2,7 +2,7 @@
 
 import { AreaSeries, ColorType, createChart, type UTCTimestamp } from "lightweight-charts";
 import { useEffect, useRef } from "react";
-import { CHART_FONT, chartPalette, useIsDark } from "@/lib/theme";
+import { chartFont, chartPalette, useIsDark } from "@/lib/theme";
 
 /** منحنى النقاط التراكمي */
 export function EquityChart({ points }: { points: { time: number; value: number }[] }) {
@@ -13,7 +13,7 @@ export function EquityChart({ points }: { points: { time: number; value: number 
     const C = chartPalette(dark);
     const chart = createChart(ref.current, {
       autoSize: true,
-      layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: C.text, fontFamily: CHART_FONT, fontSize: 11 },
+      layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: C.text, fontFamily: chartFont(), fontSize: 11 },
       grid: { vertLines: { color: C.grid }, horzLines: { color: C.grid } },
       rightPriceScale: { borderColor: C.border },
       timeScale: { borderColor: C.border },

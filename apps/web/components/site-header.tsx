@@ -15,9 +15,9 @@ export function Logo({ className }: { className?: string }) {
   return (
     <Link href="/" className={cn("flex shrink-0 items-center gap-2", className)} aria-label="QFX الرئيسية">
       <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden>
-        <rect width="34" height="34" rx="9" className="fill-foreground" />
-        <path d="M8 22.5 L14 15.5 L18.5 19.5 L26 10.5" fill="none" stroke="#2962FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="26" cy="10.5" r="2.4" fill="#2962FF" />
+        <rect width="34" height="34" rx="9" className="fill-panel stroke-border" strokeWidth="1" />
+        <path d="M8 22.5 L14 15.5 L18.5 19.5 L26 10.5" fill="none" stroke="hsl(var(--hero-accent))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="26" cy="10.5" r="2.4" fill="hsl(var(--hero-accent))" />
       </svg>
       <span className="text-[22px] font-black tracking-tight" dir="ltr">QFX</span>
     </Link>
@@ -39,13 +39,13 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+      <header className="site-header sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
         <div className="container flex h-16 items-center gap-4">
           <Logo />
           {/* شريط البحث الكبير */}
           <button
             onClick={openSymbolSearch}
-            className="hidden h-11 min-w-0 max-w-[340px] flex-1 items-center gap-2.5 rounded-full bg-secondary px-4 text-[15px] text-muted-foreground transition-colors hover:bg-input/60 md:flex"
+            className="hidden h-11 min-w-0 max-w-[340px] flex-1 items-center gap-2.5 rounded-pill bg-secondary px-4 text-[15px] text-muted-foreground transition-colors hover:bg-input/60 md:flex"
           >
             <Search className="h-[18px] w-[18px]" />
             بحث

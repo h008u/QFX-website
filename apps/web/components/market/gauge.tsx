@@ -32,7 +32,7 @@ export function Gauge({ value, rating, title, counts, size = 220 }: { value: num
       <p className="mb-1 text-sm font-semibold">{title}</p>
       <svg width={size} height={size / 2 + 22} viewBox={`0 0 ${size} ${size / 2 + 22}`} style={{ direction: "ltr" }} aria-label={`${title}: ${RATING_LABEL[rating]}`}>
         {segs.map(([a0, a1], i) => (
-          <path key={i} d={arc(a0, a1)} fill="none" strokeWidth="7" strokeLinecap="round" stroke={i === active ? (i < 2 ? "#F23645" : i > 2 ? "#2962FF" : "#787B86") : "hsl(var(--border))"} />
+          <path key={i} d={arc(a0, a1)} fill="none" strokeWidth="7" strokeLinecap="round" stroke={i === active ? (i < 2 ? "var(--chart-down)" : i > 2 ? "var(--chart-accent)" : "hsl(var(--muted-foreground))") : "hsl(var(--border))"} />
         ))}
         <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="hsl(var(--foreground))" strokeWidth="3" strokeLinecap="round" />
         <circle cx={cx} cy={cy} r="6" fill="hsl(var(--foreground))" />

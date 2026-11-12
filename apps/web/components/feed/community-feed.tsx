@@ -93,7 +93,7 @@ export function CommunityFeed({ initial, demo }: { initial: NewsItem[]; demo: bo
               key={f.key}
               onClick={() => setFilter(f.key)}
               className={cn(
-                "h-9 shrink-0 rounded-full px-4 text-sm font-semibold transition-colors",
+                "h-9 shrink-0 rounded-pill px-4 text-sm font-semibold transition-colors",
                 filter === f.key ? "bg-foreground text-background" : "bg-secondary text-foreground hover:bg-input/60",
               )}
             >

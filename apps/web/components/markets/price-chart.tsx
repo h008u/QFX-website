@@ -11,7 +11,7 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
-import { CHART_FONT, chartPalette, useIsDark } from "@/lib/theme";
+import { chartFont, chartPalette, useIsDark } from "@/lib/theme";
 
 export interface ChartCandle {
   time: number;
@@ -54,7 +54,7 @@ export function PriceChart({
       autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        fontFamily: CHART_FONT,
+        fontFamily: chartFont(),
         fontSize: 11,
         attributionLogo: true,
       },

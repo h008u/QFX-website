@@ -44,7 +44,7 @@ export function MarketSummary({ items }: { items: SummaryItem[] }) {
               setCat(c);
               setSel(items.find((i) => i.category === c)?.symbol);
             }}
-            className={cn("h-10 shrink-0 rounded-full px-5 text-[15px] font-semibold transition-colors", c === cat ? "bg-foreground text-background" : "bg-secondary hover:bg-input/60")}
+            className={cn("h-10 shrink-0 rounded-pill px-5 text-[15px] font-semibold transition-colors", c === cat ? "bg-foreground text-background" : "bg-secondary hover:bg-input/60")}
           >
             {CATEGORY_LABEL[c]}
           </button>

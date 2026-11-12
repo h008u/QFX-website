@@ -50,24 +50,24 @@ export default async function HomePage() {
   return (
     <>
       {/* ===== البطل: خلفية داكنة وعنوان ضخم وبحث كبير ===== */}
-      <section className="relative overflow-hidden bg-[#0F0F0F] text-white">
-        <svg className="absolute inset-0 h-full w-full opacity-60" viewBox="0 0 1440 640" preserveAspectRatio="none" aria-hidden>
+      <section className="hero-section relative overflow-hidden bg-hero text-hero-foreground">
+        <svg className="hero-art absolute inset-0 h-full w-full opacity-60" viewBox="0 0 1440 640" preserveAspectRatio="none" aria-hidden>
           <defs>
             <linearGradient id="hero-g" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="#2962FF" stopOpacity="0.35" />
-              <stop offset="1" stopColor="#2962FF" stopOpacity="0" />
+              <stop offset="0" stopColor="currentColor" stopOpacity="0.35" />
+              <stop offset="1" stopColor="currentColor" stopOpacity="0" />
             </linearGradient>
           </defs>
           <path d="M0 520 L120 470 L220 495 L340 400 L460 430 L580 330 L700 360 L820 250 L940 290 L1060 190 L1180 220 L1300 120 L1440 150 L1440 640 L0 640Z" fill="url(#hero-g)" />
-          <path d="M0 520 L120 470 L220 495 L340 400 L460 430 L580 330 L700 360 L820 250 L940 290 L1060 190 L1180 220 L1300 120 L1440 150" fill="none" stroke="#2962FF" strokeWidth="2.5" />
+          <path d="M0 520 L120 470 L220 495 L340 400 L460 430 L580 330 L700 360 L820 250 L940 290 L1060 190 L1180 220 L1300 120 L1440 150" fill="none" stroke="currentColor" strokeWidth="2.5" />
         </svg>
         <div className="container relative flex min-h-[560px] flex-col justify-center py-20 md:min-h-[640px]">
           <h1 className="max-w-4xl text-[52px] font-black leading-[1.12] tracking-tight md:text-[88px]">
             حلّل أولاً.
             <br />
-            <span className="text-[#5B8DEF]">ثم تداول بثقة.</span>
+            <span className="brand-accent">ثم تداول بثقة.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[#D1D4DC] md:text-xl">{siteConfig.description}</p>
+          <p className="mt-6 max-w-xl text-lg leading-8 text-hero-muted md:text-xl">{siteConfig.description}</p>
           <div className="mt-10">
             <HeroSearch />
           </div>
@@ -75,18 +75,18 @@ export default async function HomePage() {
             <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={buttonVariants({ size: "pill" })}>
               افتح حسابك عبر الوكالة
             </a>
-            <Link href="/signals" className="inline-flex h-11 items-center rounded-full px-6 text-[15px] font-semibold text-white ring-1 ring-white/30 hover:bg-white/10">
+            <Link href="/signals" className="inline-flex h-11 items-center rounded-pill px-6 text-[15px] font-semibold text-hero-foreground ring-1 ring-hero-foreground/30 hover:bg-hero-foreground/10">
               سجل التوصيات
             </Link>
           </div>
-          <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-white/15 pt-6">
+          <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-hero-foreground/15 pt-6">
             {[
               [stats.win_rate === null ? "—" : `${stats.win_rate}%`, "نسبة نجاح التوصيات"],
               [`${stats.total_pips > 0 ? "+" : ""}${stats.total_pips}`, "مجموع النقاط"],
               [String(stats.total), "توصية منشورة"],
             ].map(([v, l]) => (
               <div key={l}>
-                <dt className="text-xs text-[#9598A1] md:text-sm">{l}</dt>
+                <dt className="text-xs text-hero-muted md:text-sm">{l}</dt>
                 <dd className="num mt-1 text-2xl font-bold md:text-3xl">{v}</dd>
               </div>
             ))}
@@ -137,10 +137,10 @@ export default async function HomePage() {
               ))}
             </ul>
           </div>
-          <aside className="rounded-2xl bg-[#131722] p-8 text-white lg:self-start">
-            <Zap className="h-8 w-8 text-[#5B8DEF]" />
+          <aside className="glass-card rounded-2xl bg-panel p-8 text-panel-foreground lg:self-start">
+            <Zap className="h-8 w-8 text-panel-accent" />
             <p className="mt-4 text-2xl font-bold leading-snug">التوصيات والأخبار القوية تصلك على تيليجرام فور صدورها</p>
-            <p className="mt-3 text-sm leading-7 text-[#B2B5BE]">تنبيه قبل الخبر الاقتصادي القوي، وأجندة يومية، وتحديثات الصفقات كرد على رسالتها.</p>
+            <p className="mt-3 text-sm leading-7 text-panel-muted">تنبيه قبل الخبر الاقتصادي القوي، وأجندة يومية، وتحديثات الصفقات كرد على رسالتها.</p>
             <a href={siteConfig.telegramUrl} target="_blank" rel="noopener" className={cn(buttonVariants({ size: "pill" }), "mt-6")}>
               انضم للقناة
             </a>
@@ -181,10 +181,10 @@ export default async function HomePage() {
         {/* ===== الانضمام ===== */}
         <section id="join" className="scroll-mt-24">
           <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-border lg:grid-cols-2">
-            <div className="bg-[#131722] p-8 text-white md:p-12">
-              <BadgeCheck className="h-9 w-9 text-[#5B8DEF]" />
+            <div className="glass-card bg-panel p-8 text-panel-foreground md:p-12">
+              <BadgeCheck className="h-9 w-9 text-panel-accent" />
               <h2 className="mt-5 text-3xl font-bold leading-tight md:text-4xl">جاهز للانضمام؟</h2>
-              <p className="mt-4 leading-8 text-[#B2B5BE]">سجّل حسابك عبر رابط الوكالة، ثم أرسل بياناتك لنفعّل اشتراكك في قناة العملاء.</p>
+              <p className="mt-4 leading-8 text-panel-muted">سجّل حسابك عبر رابط الوكالة، ثم أرسل بياناتك لنفعّل اشتراكك في قناة العملاء.</p>
               <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={cn(buttonVariants({ size: "pill" }), "mt-8")}>
                 1. افتح الحساب
               </a>

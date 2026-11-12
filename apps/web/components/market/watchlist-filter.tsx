@@ -16,7 +16,7 @@ export function WatchlistMobileFiltered({ items, categories }: { items: (WatchIt
           <button
             key={k}
             onClick={() => setCat(k)}
-            className={cn("h-8 shrink-0 rounded-full px-4 text-sm font-semibold transition-colors", k === cat ? "bg-foreground text-background" : "bg-secondary")}
+            className={cn("h-8 shrink-0 rounded-pill px-4 text-sm font-semibold transition-colors", k === cat ? "bg-foreground text-background" : "bg-secondary")}
           >
             {label}
           </button>

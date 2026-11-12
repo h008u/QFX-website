@@ -20,9 +20,9 @@ export default async function FeedPage() {
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
         <CommunityFeed initial={data} demo={demo} />
         <aside className="space-y-4">
-          <div className="sticky top-20 rounded-2xl bg-[#0F0F0F] p-6 text-white">
+          <div className="sticky top-20 glass-card rounded-2xl bg-panel p-6 text-panel-foreground">
             <h3 className="text-xl font-bold">انضم للقناة</h3>
-            <p className="mt-2 text-sm leading-7 text-white/70">
+            <p className="mt-2 text-sm leading-7 text-panel-muted">
               فعّل الإشعارات في قناة التيليجرام لتصلك التوصيات وتنبيهات الأخبار عالية التأثير قبل صدورها.
             </p>
             <a href={siteConfig.telegramUrl} target="_blank" rel="noopener" className={buttonVariants({ size: "pill", className: "mt-5 w-full" })}>
