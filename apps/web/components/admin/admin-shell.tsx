@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { THEME_KEY } from "@/lib/theme-script";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "./command-palette";
 import { PushToggle } from "./push-toggle";
@@ -53,6 +54,25 @@ export function AdminShell({
     setNavOpen(false);
     setBellOpen(false);
   }, [pathname]);
+
+  // اللوحة تبقى على الثيم المؤسسي (فاتح/داكن حسب اختيار المستخدم) مهما كان ثيم الموقع
+  useEffect(() => {
+    const d = document.documentElement;
+    const prevTheme = d.getAttribute("data-theme");
+    const prevDark = d.classList.contains("dark");
+    let wantDark = false;
+    try {
+      wantDark = localStorage.getItem(THEME_KEY) === "dark";
+    } catch {
+      /* التخزين غير متاح */
+    }
+    d.setAttribute("data-theme", "institutional");
+    d.classList.toggle("dark", wantDark);
+    return () => {
+      if (prevTheme) d.setAttribute("data-theme", prevTheme);
+      d.classList.toggle("dark", prevDark);
+    };
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

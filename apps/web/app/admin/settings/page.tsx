@@ -4,7 +4,7 @@ import {
 import { AppearanceSection } from "@/components/admin/settings/appearance-section";
 import { PageHeader } from "@/components/admin/ui";
 import { DEFAULT_THEME, isThemeId } from "@/config/themes";
-import { APPEARANCE_KEY } from "@/lib/site-theme";
+import { APPEARANCE_KEY } from "@/lib/site-settings";
 import { listMedia } from "@/lib/admin/media";
 import { canEdit, getAdminContext } from "@/lib/admin/session";
 import { loadAdminSettings } from "@/lib/admin/settings";

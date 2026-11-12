@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/components/admin/ui";
 import { isThemeId, SITE_THEMES } from "@/config/themes";
 import { audit, requireRole } from "@/lib/admin/session";
-import { APPEARANCE_KEY } from "@/lib/site-theme";
+import { APPEARANCE_KEY } from "@/lib/site-settings";
 
 /** يحفظ ثيم الموقع العام (المدير فقط) ويعيد بناء كل الصفحات */
 export async function saveAppearanceAction(theme: string): Promise<ActionResult> {

@@ -3,7 +3,7 @@ import {
   Cormorant_Garamond, El_Messiri, IBM_Plex_Mono, IBM_Plex_Sans_Arabic, Inter, JetBrains_Mono, Noto_Kufi_Arabic, Readex_Pro, Space_Grotesk, Tajawal,
 } from "next/font/google";
 import { siteConfig } from "@/config/site";
-import { getAppearance } from "@/lib/site-theme";
+import { getAppearance } from "@/lib/site-settings";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-script";
 import "./globals.css";
 

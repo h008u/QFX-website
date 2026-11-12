@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EditableText } from "@/components/site-editor/editor";
 import { siteConfig } from "@/config/site";
 import { Logo } from "./site-header";
 
@@ -14,9 +15,7 @@ export function SiteFooter() {
       <div className="container grid grid-cols-2 gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="col-span-2 md:col-span-1">
           <Logo />
-          <p className="mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
-            وكيل معرّف (Introducing Broker) يربط المتداولين العرب بشركات وساطة مرخّصة، مع شارتات وتوصيات وتحليلات ومجتمع تداول بالعربية.
-          </p>
+          <EditableText as="p" k="footer.about" multiline className="mt-4 block max-w-sm text-sm leading-7 text-muted-foreground" />
         </div>
         {COLS.map((c) => (
           <div key={c.title}>

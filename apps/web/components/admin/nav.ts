@@ -1,6 +1,6 @@
 import {
   Activity, BarChart3, Bell, Bot, CandlestickChart, MessagesSquare, CalendarDays, DatabaseBackup, FileClock, GitBranch, Home, Image, Inbox, LineChart,
-  Newspaper, PenSquare, Settings, ShieldCheck, Users, UsersRound, Workflow, type LucideIcon,
+  Newspaper, PanelsTopLeft, PenSquare, Settings, ShieldCheck, Users, UsersRound, Workflow, type LucideIcon,
 } from "lucide-react";
 
 export interface NavItem {
@@ -26,6 +26,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/newsroom", label: "غرفة الأخبار والأجندة", icon: Newspaper, group: "الأخبار", keywords: "news agenda calendar أجندة" },
   { href: "/admin/comments", label: "تعليقات المجتمع", icon: MessagesSquare, group: "العملاء", keywords: "comments moderation تعليقات إشراف" },
   { href: "/admin/crm", label: "العملاء والأعضاء", icon: UsersRound, group: "العملاء", badge: "leads", keywords: "crm leads members إحالة" },
+  { href: "/admin/site", label: "محتوى الموقع", icon: PanelsTopLeft, group: "الإعدادات", keywords: "content texts sections cms نصوص أقسام ترتيب" },
   { href: "/admin/settings", label: "الإعدادات", icon: Settings, group: "الإعدادات", keywords: "settings destinations sources مصادر أماكن" },
   { href: "/admin/rules", label: "القواعد والقوالب", icon: GitBranch, group: "الإعدادات", keywords: "rules policy templates سياسة كلمات" },
   { href: "/admin/media", label: "مكتبة الصور", icon: Image, group: "الإعدادات", keywords: "media images صور" },

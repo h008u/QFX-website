@@ -244,3 +244,70 @@
   background: rgba(6, 8, 22, 0.72);
   backdrop-filter: blur(14px);
 }
+
+/* =====================================================================
+   وضع التعديل المباشر (للفريق فقط عبر ?edit=1)
+   ===================================================================== */
+.site-editable {
+  outline: 1.5px dashed transparent;
+  outline-offset: 3px;
+  border-radius: 3px;
+  cursor: text;
+  transition: outline-color 0.15s, background-color 0.15s;
+  min-width: 1ch;
+}
+.site-editing .site-editable {
+  outline-color: hsl(var(--primary) / 0.35);
+}
+.site-editable:hover {
+  outline-color: hsl(var(--primary));
+}
+.site-editable:focus {
+  outline: 2px solid hsl(var(--primary));
+  background: hsl(var(--primary) / 0.08);
+}
+.site-section {
+  outline: 1.5px dashed hsl(var(--primary) / 0.35);
+  outline-offset: 6px;
+  border-radius: 6px;
+  margin-top: 44px;
+}
+.site-section:hover {
+  outline-color: hsl(var(--primary));
+}
+.site-section-over {
+  box-shadow: 0 -6px 0 0 hsl(var(--primary));
+}
+.site-section-bar {
+  position: absolute;
+  top: -40px;
+  inset-inline-start: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-body), sans-serif;
+  user-select: none;
+}
+.site-section-hidden {
+  padding: 28px;
+  text-align: center;
+  font-size: 14px;
+  color: hsl(var(--muted-foreground));
+  border-radius: 8px;
+  background: repeating-linear-gradient(45deg, hsl(var(--secondary)), hsl(var(--secondary)) 10px, transparent 10px, transparent 20px);
+}
+.site-section-over-after {
+  box-shadow: 0 6px 0 0 hsl(var(--primary));
+}
+.is-reordering,
+.is-reordering * {
+  user-select: none !important;
+  cursor: grabbing !important;
+}

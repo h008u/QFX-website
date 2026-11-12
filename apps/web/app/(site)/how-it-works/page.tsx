@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FaqList } from "@/components/landing/faq-list";
 import { Steps } from "@/components/landing/steps";
 import { PageTitle } from "@/components/page-title";
 import { buttonVariants } from "@/components/ui/button";
@@ -9,33 +10,6 @@ export const metadata: Metadata = {
   title: "كيف نعمل",
   description: "خطوات التسجيل عبر رابط الإحالة والحصول على التوصيات والدعم من وكالة QFX.",
 };
-
-const faqs = [
-  {
-    q: "ما هو الوكيل المعرّف (IB)؟",
-    a: "الوكيل المعرّف هو جهة تُعرّف العملاء على شركة وساطة مرخّصة وتقدّم لهم خدمات إضافية مثل الدعم والتعليم والتحليلات. يحصل الوكيل على عمولة من الوسيط مقابل ذلك، دون أي تكلفة إضافية عليك.",
-  },
-  {
-    q: "هل أرسل أموالي إليكم؟",
-    a: "لا أبداً. الإيداع والسحب يتمّان مباشرة بينك وبين شركة الوساطة. لا نطلب كلمات المرور ولا نستلم أي أموال.",
-  },
-  {
-    q: "لدي حساب مسبق لدى الوسيط، هل أستطيع الانضمام؟",
-    a: "بعض الوسطاء يسمحون بنقل الحساب إلى وكالة جديدة عبر طلب للدعم. تواصل معنا وسنساعدك، أو افتح حساباً جديداً عبر رابطنا.",
-  },
-  {
-    q: "هل التوصيات مضمونة الربح؟",
-    a: "لا. لا توجد توصيات مضمونة في الأسواق المالية. ننشر سجلاً كاملاً بالنتائج الرابحة والخاسرة لتقييم الأداء بنفسك، وننصح دائماً بإدارة رأس المال وعدم المخاطرة بأكثر من 1-2% في الصفقة.",
-  },
-  {
-    q: "كيف تصلني التوصيات؟",
-    a: "تُنشر التوصية في قناة تيليجرام وعلى صفحة التوصيات في الموقع في نفس اللحظة، مع تحديث تلقائي عند تحقق الهدف أو ضرب الوقف.",
-  },
-  {
-    q: "ما هو نسخ التداول؟",
-    a: "بعض الوسطاء يتيحون ربط حسابك بحساب استراتيجية لنسخ الصفقات تلقائياً. يتم ذلك عبر منصة الوسيط نفسها ويمكنك إيقافه في أي وقت.",
-  },
-];
 
 export default function HowItWorksPage() {
   return (
@@ -55,16 +29,8 @@ export default function HowItWorksPage() {
           </ul>
         </div>
         <div className="lg:col-span-2">
-          <h2 className="mb-2 text-2xl font-bold">الأسئلة الشائعة</h2>
-          {faqs.map((f) => (
-            <details key={f.q} className="group border-b border-border py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
-                {f.q}
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-secondary text-lg transition-transform group-open:rotate-45">+</span>
-              </summary>
-              <p className="mt-3 max-w-2xl text-[15px] leading-8 text-muted-foreground">{f.a}</p>
-            </details>
-          ))}
+          <h2 id="faq" className="mb-2 scroll-mt-24 text-2xl font-bold">الأسئلة الشائعة</h2>
+          <FaqList />
         </div>
       </div>
 

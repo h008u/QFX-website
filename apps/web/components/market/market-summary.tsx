@@ -23,7 +23,7 @@ export interface SummaryItem {
 }
 
 /** ملخص السوق: تبويبات الفئات + شارت كبير + قائمة الرموز (مثل الصفحات الرئيسية لمنصات التحليل) */
-export function MarketSummary({ items }: { items: SummaryItem[] }) {
+export function MarketSummary({ items, title }: { items: SummaryItem[]; title?: React.ReactNode }) {
   const cats = [...new Set(items.map((i) => i.category))];
   const [cat, setCat] = useState<MarketCategory>(cats[0]);
   const list = useMemo(() => items.filter((i) => i.category === cat), [items, cat]);
@@ -33,7 +33,7 @@ export function MarketSummary({ items }: { items: SummaryItem[] }) {
   return (
     <section>
       <Link href="/markets" className="group mb-5 inline-flex items-center gap-1 text-[28px] font-bold leading-tight md:text-[34px]">
-        ملخص السوق
+        {title ?? "ملخص السوق"}
         <ChevronLeft className="h-7 w-7 transition-transform group-hover:-translate-x-1" />
       </Link>
       <div className="scrollbar-none mb-5 flex gap-2 overflow-x-auto">
