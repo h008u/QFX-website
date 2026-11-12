@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Steps } from "@/components/landing/steps";
-import { SectionHeading } from "@/components/section-heading";
+import { PageTitle } from "@/components/page-title";
 import { buttonVariants } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -40,41 +39,40 @@ const faqs = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="container py-16">
-      <SectionHeading
-        eyebrow="كيف نقدّم الخدمة"
-        title="من التسجيل إلى أول توصية"
-        text="عملية بسيطة وشفافة: حسابك وأموالك لدى وسيط مرخّص، ونحن نرافقك بالدعم والمحتوى."
-      />
-      <Steps />
+    <div className="container py-8 md:py-12">
+      <PageTitle title="من التسجيل إلى أول توصية" text="عملية بسيطة وشفافة: حسابك وأموالك لدى وسيط مرخّص، ونحن نرافقك بالدعم والمحتوى." />
+      <div className="mt-10">
+        <Steps />
+      </div>
 
-      <div className="mt-16 grid gap-6 lg:grid-cols-3">
-        <Card className="p-6 lg:col-span-1">
+      <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-3">
+        <div className="h-fit rounded-2xl bg-secondary p-6 lg:col-span-1">
           <h3 className="text-lg font-bold">كيف ترتبط الخدمات ببعضها؟</h3>
           <ul className="mt-4 space-y-3 text-sm leading-7 text-muted-foreground">
             <li>📌 <b className="text-foreground">الموقع:</b> سجل التوصيات، التحليلات، الأخبار ونموذج الانضمام.</li>
             <li>🤖 <b className="text-foreground">بوت تيليجرام:</b> ينشر التوصيات وتحديثاتها وملخص المفكرة الاقتصادية تلقائياً.</li>
             <li>💬 <b className="text-foreground">المجتمع:</b> متابعة التحليلات حسب الأصل (عملات، ذهب، نفط) بشكل منظم.</li>
           </ul>
-        </Card>
-        <div className="space-y-3 lg:col-span-2">
+        </div>
+        <div className="lg:col-span-2">
+          <h2 className="mb-2 text-2xl font-bold">الأسئلة الشائعة</h2>
           {faqs.map((f) => (
-            <details key={f.q} className="group rounded-lg border border-border bg-card p-5 open:border-primary/40">
-              <summary className="cursor-pointer list-none font-semibold marker:hidden">
-                <span className="me-2 inline-block text-primary transition-transform group-open:rotate-45">+</span>
+            <details key={f.q} className="group border-b border-border py-5">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
                 {f.q}
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-secondary text-lg transition-transform group-open:rotate-45">+</span>
               </summary>
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">{f.a}</p>
+              <p className="mt-3 max-w-2xl text-[15px] leading-8 text-muted-foreground">{f.a}</p>
             </details>
           ))}
         </div>
       </div>
 
       <div className="mt-16 flex flex-wrap justify-center gap-3">
-        <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={buttonVariants({ size: "lg" })}>
+        <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={buttonVariants({ size: "pill" })}>
           ابدأ الآن عبر رابط الوكالة
         </a>
-        <Link href="/#join" className={buttonVariants({ size: "lg", variant: "outline" })}>
+        <Link href="/#join" className={buttonVariants({ size: "pill", variant: "outline" })}>
           أرسل بيانات التفعيل
         </Link>
       </div>

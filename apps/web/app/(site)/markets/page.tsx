@@ -6,7 +6,8 @@ import { AdvancedChart, type ChartLevel } from "@/components/market/advanced-cha
 import { Gauge, ratingTone, RATING_LABEL } from "@/components/market/gauge";
 import { Change, fmtPrice } from "@/components/market/price";
 import { SymbolLogo } from "@/components/market/symbol-logo";
-import { WatchlistMobile, WatchlistPanel, type WatchItem } from "@/components/market/watchlist";
+import { WatchlistPanel, type WatchItem } from "@/components/market/watchlist";
+import { WatchlistMobileFiltered } from "@/components/market/watchlist-filter";
 import { CATEGORY_LABEL, marketOf } from "@/config/markets";
 import { getNews, getSignals } from "@/lib/data";
 import { getMarkets, technicals, type MarketSeries } from "@/lib/market-data";
@@ -50,6 +51,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
   const tech = technicals(cur.candles);
   const open = marketOpen(meta.category);
   const watch: WatchItem[] = series.map((x) => ({ symbol: x.meta.symbol, name: x.meta.name, digits: x.meta.digits, last: x.last, change: x.change, changePct: x.changePct }));
+  const watchCat = series.map((x, k) => ({ ...watch[k], category: x.meta.category as string }));
   const related = (signals as Signal[]).filter((x) => x.symbol === symbol).slice(0, 6);
   const openSig = related.find((x) => !CLOSED_STATUSES.includes(x.status));
   const levels: ChartLevel[] = openSig
@@ -237,14 +239,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
               <h1 className="text-[28px] font-bold">قائمة المراقبة</h1>
               <MobileSearchButton />
             </div>
-            <div className="scrollbar-none flex gap-2 overflow-x-auto px-4 pb-3">
-              {["الكل", ...Object.values(CATEGORY_LABEL)].map((c, k) => (
-                <span key={c} className={cn("h-8 shrink-0 rounded-full px-4 text-sm font-semibold leading-8", k === 0 ? "bg-foreground text-background" : "bg-secondary")}>{c}</span>
-              ))}
-            </div>
-            <div className="border-t border-border">
-              <WatchlistMobile items={watch} />
-            </div>
+            <WatchlistMobileFiltered items={watchCat} categories={CATEGORY_LABEL} />
             {demo && <p className="px-4 py-3 text-xs text-muted-foreground">أسعار توضيحية</p>}
           </div>
         )}

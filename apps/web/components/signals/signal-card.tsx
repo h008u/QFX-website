@@ -1,8 +1,7 @@
 import { ASSET_LABEL, DIRECTION_LABEL, STATUS_LABEL, riskReward, type Signal } from "@qfx/shared";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { CommentThread } from "@/components/community/comment-thread";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { SymbolLogo } from "@/components/market/symbol-logo";
 import { cn, formatPrice, timeAgo } from "@/lib/utils";
 
 export function statusVariant(status: Signal["status"]) {
@@ -20,16 +19,25 @@ export function statusVariant(status: Signal["status"]) {
   }
 }
 
+const STATUS_TONE: Record<string, string> = {
+  success: "text-up",
+  danger: "text-down",
+  info: "text-primary",
+  gold: "text-amber-500",
+  outline: "text-muted-foreground",
+};
+
 function Level({ label, value, tone }: { label: string; value: number | null; tone?: string }) {
   if (value === null || value === undefined) return null;
   return (
-    <div className="flex items-center justify-between rounded-md bg-secondary/60 px-3 py-1.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={cn("num font-semibold", tone)}>{formatPrice(value)}</span>
+    <div className="min-w-0">
+      <p className="text-[12px] text-muted-foreground">{label}</p>
+      <p className={cn("num mt-0.5 truncate text-[17px] font-semibold", tone)}>{formatPrice(value)}</p>
     </div>
   );
 }
 
+/** بطاقة توصية بأسلوب "الأفكار": رأس بالشعار والرمز، ومستويات مسطّحة كإحصائيات */
 export function SignalCard({ signal, withComments = false }: { signal: Signal; withComments?: boolean }) {
   const buy = signal.direction === "BUY";
   const rr = riskReward({
@@ -37,53 +45,51 @@ export function SignalCard({ signal, withComments = false }: { signal: Signal; w
     stop_loss: Number(signal.stop_loss),
     take_profit_1: Number(signal.take_profit_1),
   });
+  const tps = [signal.take_profit_2, signal.take_profit_3].filter((x) => x !== null && x !== undefined);
   return (
-    <Card className="animate-fade-in p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span
-            className={cn(
-              "grid h-10 w-10 place-items-center rounded-lg",
-              buy ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
-            )}
-          >
-            {buy ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
-          </span>
-          <div>
-            <p className="num text-lg font-bold">{signal.symbol}</p>
-            <p className="text-xs text-muted-foreground">
-              {DIRECTION_LABEL[signal.direction]} • {ASSET_LABEL[signal.asset_class]} • {timeAgo(signal.created_at)}
-            </p>
-          </div>
+    <article className="animate-fade-in rounded-xl border border-border p-4 transition-colors hover:border-input">
+      <div className="flex items-center gap-3">
+        <SymbolLogo symbol={signal.symbol} size={36} />
+        <div className="min-w-0 flex-1">
+          <Link href={`/markets?s=${signal.symbol}`} className="num text-[17px] font-bold hover:text-primary">
+            {signal.symbol}
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            {ASSET_LABEL[signal.asset_class]} • {timeAgo(signal.created_at)}
+          </p>
         </div>
-        <Badge variant={statusVariant(signal.status)}>{STATUS_LABEL[signal.status]}</Badge>
-      </div>
-
-      <div className="mt-4 grid gap-1.5">
-        <Level label="الدخول" value={signal.entry_price} />
-        <Level label="وقف الخسارة" value={signal.stop_loss} tone="text-destructive" />
-        <Level label="الهدف 1" value={signal.take_profit_1} tone="text-success" />
-        <Level label="الهدف 2" value={signal.take_profit_2} tone="text-success" />
-        <Level label="الهدف 3" value={signal.take_profit_3} tone="text-success" />
-      </div>
-
-      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-        <span>
-          {rr ? (
-            <>
-              العائد/المخاطرة <span className="num">1:{rr}</span>
-            </>
-          ) : null}
+        <span className={cn("rounded px-2 py-0.5 text-xs font-bold text-white", buy ? "bg-success" : "bg-destructive")}>
+          {DIRECTION_LABEL[signal.direction]}
         </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-3 border-y border-border py-3">
+        <Level label="الدخول" value={signal.entry_price} />
+        <Level label="وقف الخسارة" value={signal.stop_loss} tone="text-down" />
+        <Level label="الهدف 1" value={signal.take_profit_1} tone="text-up" />
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+        <span className={cn("font-semibold", STATUS_TONE[statusVariant(signal.status)])}>● {STATUS_LABEL[signal.status]}</span>
+        {rr ? (
+          <span className="text-muted-foreground">
+            العائد/المخاطرة <span className="num text-foreground">1:{rr}</span>
+          </span>
+        ) : null}
+        {tps.length > 0 && (
+          <span className="text-muted-foreground">
+            أهداف إضافية <span className="num text-up">{tps.map((x) => formatPrice(x as number)).join(" / ")}</span>
+          </span>
+        )}
         {signal.result_pips !== null && (
-          <span className={cn("num text-sm font-bold", Number(signal.result_pips) >= 0 ? "text-success" : "text-destructive")}>
+          <span className={cn("num ms-auto font-bold", Number(signal.result_pips) >= 0 ? "text-up" : "text-down")}>
             {Number(signal.result_pips) > 0 ? "+" : ""}
             {signal.result_pips} نقطة
           </span>
         )}
       </div>
-      {signal.notes && <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">{signal.notes}</p>}
+      {signal.notes && <p className="mt-3 text-sm leading-7 text-muted-foreground">{signal.notes}</p>}
       {withComments && <CommentThread target="signal" targetId={signal.id} />}
-    </Card>
+    </article>
   );
 }

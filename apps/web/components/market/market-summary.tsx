@@ -91,10 +91,10 @@ export function MarketSummary({ items }: { items: SummaryItem[] }) {
                 <Change pct={current.changePct} abs={current.change} digits={current.digits} className="text-sm" />
               </div>
             </div>
-            <AdvancedChart key={current.symbol} symbol={current.symbol} candles={current.candles} digits={current.digits} className="mt-3 h-[420px]" compactToolbar />
+            <AdvancedChart key={current.symbol} symbol={current.symbol} candles={current.candles} digits={current.digits} className="mt-3 h-[320px] md:h-[420px]" compactToolbar />
           </div>
         )}
-        <ul className="divide-y divide-border">
+        <ul className="hidden divide-y divide-border lg:block">
           {list.map((i) => (
             <li key={i.symbol}>
               <button onClick={() => setSel(i.symbol)} className={cn("flex w-full items-center gap-3 px-4 py-3 text-start hover:bg-secondary/60", i.symbol === current?.symbol && "bg-secondary")}>

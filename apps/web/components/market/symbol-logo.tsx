@@ -30,8 +30,12 @@ function Circle({ code, size, className, shift = 0 }: { code: string; size: numb
   );
 }
 
+// أسماء بديلة شائعة عند الوسطاء
+const ALIAS: Record<string, string> = { USOIL: "WTI", XTIUSD: "WTI", WTIUSD: "WTI", UKOIL: "WTI", XBRUSD: "WTI", GOLD: "XAUUSD", SILVER: "XAGUSD" };
+
 export function SymbolLogo({ symbol, size = 32, className }: { symbol: string; size?: number; className?: string }) {
-  const s = symbol.toUpperCase();
+  const up = symbol.toUpperCase();
+  const s = ALIAS[up] ?? up;
   if (s === "WTI" || s.length !== 6) return <Circle code={s === "WTI" ? "WTI" : s.slice(0, 3)} size={size} className={className} />;
   const a = s.slice(0, 3);
   const b = s.slice(3);

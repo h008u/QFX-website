@@ -103,10 +103,14 @@ export default async function HomePage() {
         {/* ===== التوصيات بشكل بطاقات الأفكار ===== */}
         <section>
           <SectionTitle href="/signals">أحدث التوصيات</SectionTitle>
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 lg:grid-cols-3">
             {ideas.map((s) => {
               const m = bySym.get(s.symbol);
-              return <IdeaCard key={s.id} signal={s} spark={(m?.candles ?? []).slice(-60).map((c) => c.close)} digits={m?.meta.digits ?? 5} />;
+              return (
+                <div key={s.id} className="w-[82%] shrink-0 snap-start sm:w-auto">
+                  <IdeaCard signal={s} spark={(m?.candles ?? []).slice(-60).map((c) => c.close)} digits={m?.meta.digits ?? 5} />
+                </div>
+              );
             })}
           </div>
         </section>
