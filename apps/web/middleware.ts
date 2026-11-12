@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { CONSENT_COOKIE, parse } from "@/lib/consent";
 import { REF_COOKIE, REF_MAX_AGE, sanitizeRef } from "@/lib/referral";
 import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "@/lib/supabase/env";
 
@@ -23,9 +24,12 @@ export async function middleware(req: NextRequest) {
     await supabase.auth.getUser();
   }
 
-  // حفظ كود الإحالة
+  // حفظ كود الإحالة — فقط إذا سبق أن وافق الزائر على «نسب الإحالة»؛ وإلا يحفظه المتصفح في الجلسة
+  // وينتظر الموافقة (components/consent/provider.tsx)
   const ref = sanitizeRef(req.nextUrl.searchParams.get("ref"));
-  if (ref) res.cookies.set(REF_COOKIE, ref, { maxAge: REF_MAX_AGE, path: "/", sameSite: "lax", httpOnly: false });
+  if (ref && parse(req.cookies.get(CONSENT_COOKIE)?.value)?.marketing) {
+    res.cookies.set(REF_COOKIE, ref, { maxAge: REF_MAX_AGE, path: "/", sameSite: "lax", httpOnly: false });
+  }
 
   return res;
 }

@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { CommunityFeed } from "@/components/feed/community-feed";
 import { PageTitle } from "@/components/page-title";
 import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { getNews } from "@/lib/data";
 
-export const metadata: Metadata = {
-  title: "المجتمع والأخبار",
+export const metadata: Metadata = pageMeta({
+  title: "الأفكار والأخبار",
   description: "التحليلات الفنية اليومية وأخبار المفكرة الاقتصادية مقسّمة حسب الأصول: عملات، ذهب، نفط.",
-};
+  path: "/feed",
+  keywords: "feed",
+});
 
 export const revalidate = 30;
 

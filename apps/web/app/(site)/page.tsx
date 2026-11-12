@@ -2,7 +2,11 @@ import { CLOSED_STATUSES, NEWS_KIND_LABEL } from "@qfx/shared";
 import { BadgeCheck, ChevronLeft, Zap } from "lucide-react";
 import { EditableSections, EditableText } from "@/components/site-editor/editor";
 import { WhyGrid } from "@/components/landing/why-grid";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { ArticleCard } from "@/components/blog/article-card";
+import { getPublishedArticles } from "@/lib/articles";
+import { pageMeta } from "@/lib/seo";
 import { Suspense } from "react";
 import { HeroSearch } from "@/components/landing/hero-search";
 import { LeadForm } from "@/components/landing/lead-form";
@@ -17,6 +21,8 @@ import { cn, timeAgo } from "@/lib/utils";
 
 export const revalidate = 1800;
 
+export const metadata: Metadata = { ...pageMeta({ title: siteConfig.title, description: siteConfig.description, path: "/", keywords: "home" }), title: { absolute: siteConfig.title } };
+
 function SectionTitle({ href, k }: { href: string; k: string }) {
   return (
     <Link href={href} className="group mb-6 inline-flex items-center gap-1 text-[28px] font-bold leading-tight md:text-[34px]">
@@ -27,7 +33,13 @@ function SectionTitle({ href, k }: { href: string; k: string }) {
 }
 
 export default async function HomePage() {
-  const [{ series, demo }, { data: signals }, { data: stats }, { data: news }] = await Promise.all([getMarkets(), getSignals(12), getSignalStats(), getNews(8)]);
+  const [{ series, demo }, { data: signals }, { data: stats }, { data: news }, articles] = await Promise.all([
+    getMarkets(),
+    getSignals(12),
+    getSignalStats(),
+    getNews(8),
+    getPublishedArticles({ limit: 3 }),
+  ]);
   const items: SummaryItem[] = series.map((s) => ({
     symbol: s.meta.symbol,
     name: s.meta.name,
@@ -146,6 +158,17 @@ export default async function HomePage() {
     </section>
   );
 
+  const articlesNode = articles.length ? (
+    <section className="container pt-16 md:pt-24">
+      <SectionTitle href="/blog" k="articles.title" />
+      <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        {articles.map((a) => (
+          <ArticleCard key={a.id} a={a} />
+        ))}
+      </div>
+    </section>
+  ) : undefined;
+
   const why = (
     <section className="container pt-16 md:pt-24">
       <EditableText as="h2" k="why.title" className="mb-8 block text-[28px] font-bold md:text-[34px]" />
@@ -198,7 +221,7 @@ export default async function HomePage() {
 
   return (
     <div className="pb-16 md:pb-24">
-      <EditableSections nodes={{ hero, market, ideas: ideasNode, news: newsNode, why, broker, steps: stepsNode, join }} />
+      <EditableSections nodes={{ hero, market, ideas: ideasNode, news: newsNode, articles: articlesNode, why, broker, steps: stepsNode, join }} />
     </div>
   );
 }

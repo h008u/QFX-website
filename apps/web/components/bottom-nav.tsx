@@ -40,6 +40,7 @@ function Tabs() {
             </div>
             {[
               ["/signals", "التوصيات وسجل الأداء"],
+              ["/blog", "المقالات"],
               ["/how-it-works", "كيف نعمل"],
               ["/#join", "افتح حسابك"],
               [user ? "/account" : "/login", user ? "حسابي" : "تسجيل الدخول"],

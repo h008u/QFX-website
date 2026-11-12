@@ -1,5 +1,5 @@
 import {
-  Activity, BarChart3, Bell, Bot, CandlestickChart, MessagesSquare, CalendarDays, DatabaseBackup, FileClock, GitBranch, Home, Image, Inbox, LineChart,
+  Activity, BarChart3, BookOpen, Bell, Bot, CandlestickChart, MessagesSquare, CalendarDays, DatabaseBackup, FileClock, GitBranch, Home, Image, Inbox, LineChart,
   Newspaper, PanelsTopLeft, PenSquare, Settings, ShieldCheck, Users, UsersRound, Workflow, type LucideIcon,
 } from "lucide-react";
 
@@ -18,6 +18,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/flow", label: "التدفق والسجل", icon: Workflow, group: "اللوحة", badge: "failed", keywords: "flow log سجل" },
   { href: "/admin/review", label: "المراجعة والموافقة", icon: Inbox, group: "اللوحة", badge: "pending", keywords: "review approval موافقة" },
   { href: "/admin/compose", label: "منشور جديد", icon: PenSquare, group: "النشر", keywords: "post new compose كتابة" },
+  { href: "/admin/articles", label: "المقالات", icon: BookOpen, group: "النشر", keywords: "blog articles مدونة مقالات" },
   { href: "/admin/calendar", label: "تقويم المحتوى", icon: CalendarDays, group: "النشر", keywords: "calendar schedule جدولة" },
   { href: "/admin/signals", label: "التوصيات والأداء", icon: LineChart, group: "النشر", keywords: "signals performance أداء" },
   { href: "/admin/strategies", label: "بوتات التحليل", icon: Bot, group: "النشر", keywords: "strategies backtest استراتيجيات اختبار" },

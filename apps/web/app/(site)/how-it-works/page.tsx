@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { faqLd, JsonLd } from "@/lib/jsonld";
+import { pageMeta } from "@/lib/seo";
+import { getSiteContent } from "@/lib/site-settings";
 import Link from "next/link";
 import { FaqList } from "@/components/landing/faq-list";
 import { Steps } from "@/components/landing/steps";
@@ -6,14 +9,18 @@ import { PageTitle } from "@/components/page-title";
 import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "كيف نعمل",
-  description: "خطوات التسجيل عبر رابط الإحالة والحصول على التوصيات والدعم من وكالة QFX.",
-};
+  description: "خطوات التسجيل عبر رابط الإحالة والحصول على التوصيات والدعم من وكالة QFX، والأسئلة الشائعة.",
+  path: "/how-it-works",
+  keywords: "how",
+});
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  const content = await getSiteContent();
   return (
     <div className="container py-8 md:py-12">
+      <JsonLd data={faqLd(content.faqs)} />
       <PageTitle title="من التسجيل إلى أول توصية" text="عملية بسيطة وشفافة: حسابك وأموالك لدى وسيط مرخّص، ونحن نرافقك بالدعم والمحتوى." />
       <div className="mt-10">
         <Steps />

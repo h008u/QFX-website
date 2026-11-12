@@ -4,13 +4,14 @@ import { Check, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, LogOut, Penci
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { canEditSiteAction, saveSiteContentAction } from "@/app/_actions/site-content";
-import { DEFAULT_CONTENT, HOME_SECTION_LABEL, type HomeSectionId, type SiteContent } from "@/config/site-content";
+import { blockSectionId, DEFAULT_CONTENT, sectionLabel, type HomeSectionId, type SiteContent } from "@/config/site-content";
 import { cn } from "@/lib/utils";
+import { BlockView } from "./blocks";
 import { usePointerReorder } from "./reorder";
 
 const EDIT_KEY = "qfx-edit";
 
-type ListName = "why" | "steps" | "faqs";
+type ListName = "why" | "steps" | "faqs" | "blocks";
 
 interface EditorState {
   content: SiteContent;
@@ -20,7 +21,7 @@ interface EditorState {
   setListField: (list: ListName, index: number, field: string, value: string) => void;
   setAnnouncement: (patch: Partial<SiteContent["announcement"]>) => void;
   moveSection: (from: number, to: number) => void;
-  toggleSection: (id: HomeSectionId) => void;
+  toggleSection: (id: string) => void;
 }
 
 const Ctx = createContext<EditorState | null>(null);
@@ -98,8 +99,8 @@ export function SiteEditorProvider({ initial, children }: { initial: SiteContent
   const setListField = useCallback(
     (list: ListName, index: number, field: string, value: string) =>
       setDraft((d) => {
-        const arr = [...(d[list] as unknown as Record<string, string>[])];
-        arr[index] = { ...arr[index], [field]: value };
+        const arr = [...(d[list] as unknown as Record<string, unknown>[])];
+        arr[index] = setPath(arr[index], field.split("."), value) as Record<string, unknown>;
         return { ...d, [list]: arr } as SiteContent;
       }),
     [],
@@ -117,7 +118,7 @@ export function SiteEditorProvider({ initial, children }: { initial: SiteContent
     [],
   );
   const toggleSection = useCallback(
-    (id: HomeSectionId) => setDraft((d) => ({ ...d, sections: d.sections.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s)) })),
+    (id: string) => setDraft((d) => ({ ...d, sections: d.sections.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s)) })),
     [],
   );
 
@@ -205,7 +206,7 @@ export function EditableText({
     k !== undefined
       ? content.texts[k] ?? ""
       : list && index !== undefined && field
-        ? ((content[list] as unknown as Record<string, string>[])[index]?.[field] ?? "")
+        ? String(getPath((content[list] as unknown as Record<string, unknown>[])[index], field.split(".")) ?? "")
         : "";
   const ref = useRef<HTMLElement>(null);
   // نحدّث النص من الحالة فقط عندما لا يكون العنصر قيد الكتابة
@@ -253,11 +254,18 @@ export function EditableText({
 export function EditableSections({ nodes }: { nodes: Partial<Record<HomeSectionId, React.ReactNode>> }) {
   const { content, editing, moveSection, toggleSection } = useSiteContent();
   const { from, over, start } = usePointerReorder(moveSection);
-  const list = content.sections.filter((s) => nodes[s.id] !== undefined);
+  const render = (id: string): React.ReactNode | undefined => {
+    if (id.startsWith("block:")) {
+      const i = content.blocks.findIndex((b) => blockSectionId(b.id) === id);
+      return i >= 0 ? <BlockView block={content.blocks[i]} index={i} /> : undefined;
+    }
+    return nodes[id as HomeSectionId];
+  };
+  const list = content.sections.filter((s) => render(s.id) !== undefined);
 
-  if (!editing) return <>{list.filter((s) => s.visible).map((s) => <div key={s.id}>{nodes[s.id]}</div>)}</>;
+  if (!editing) return <>{list.filter((s) => s.visible).map((s) => <div key={s.id}>{render(s.id)}</div>)}</>;
 
-  const indexOf = (id: HomeSectionId) => content.sections.findIndex((s) => s.id === id);
+  const indexOf = (id: string) => content.sections.findIndex((s) => s.id === id);
   return (
     <>
       {list.map((s, i) => {
@@ -275,7 +283,7 @@ export function EditableSections({ nodes }: { nodes: Partial<Record<HomeSectionI
             <div className="site-section-bar">
               <span onPointerDown={start(idx)} className="flex cursor-grab touch-none items-center gap-1 active:cursor-grabbing" title="اسحب لتغيير الترتيب">
                 <GripVertical className="h-4 w-4" />
-                {HOME_SECTION_LABEL[s.id]}
+                {sectionLabel(s.id, content.blocks)}
               </span>
               <button onClick={() => moveSection(idx, idx - 1)} disabled={i === 0} aria-label="تحريك للأعلى" className="disabled:opacity-30">
                 <ChevronUp className="h-4 w-4" />
@@ -288,7 +296,7 @@ export function EditableSections({ nodes }: { nodes: Partial<Record<HomeSectionI
                 {s.visible ? "ظاهر" : "مخفي"}
               </button>
             </div>
-            {s.visible ? nodes[s.id] : <div className="site-section-hidden">هذا القسم مخفي عن الزوار — اضغط «مخفي» لإظهاره</div>}
+            {s.visible ? render(s.id) : <div className="site-section-hidden">هذا القسم مخفي عن الزوار — اضغط «مخفي» لإظهاره</div>}
           </div>
         );
       })}
@@ -328,4 +336,24 @@ export function AnnouncementBar() {
       )}
     </div>
   );
+}
+
+/* ---------- قراءة/كتابة حقل متداخل (items.2.title) ---------- */
+function getPath(obj: unknown, path: string[]): unknown {
+  let cur: unknown = obj;
+  for (const k of path) cur = cur && typeof cur === "object" ? (cur as Record<string, unknown>)[k] : undefined;
+  return cur;
+}
+
+function setPath(obj: unknown, path: string[], value: unknown): unknown {
+  if (!path.length) return value;
+  const [k, ...rest] = path;
+  if (Array.isArray(obj)) {
+    const a = [...obj];
+    a[Number(k)] = setPath(a[Number(k)], rest, value);
+    return a;
+  }
+  const o = { ...((obj as Record<string, unknown>) ?? {}) };
+  o[k] = setPath(o[k], rest, value);
+  return o;
 }

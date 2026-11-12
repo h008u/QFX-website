@@ -4,7 +4,10 @@ import { ArrowDown, ArrowUp, ExternalLink, Eye, EyeOff, GripVertical, Plus, Rota
 import { useState } from "react";
 import { saveSiteContentAction } from "@/app/_actions/site-content";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { DEFAULT_CONTENT, HOME_SECTION_LABEL, TEXT_FIELDS, type SiteContent } from "@/config/site-content";
+import {
+  BLOCK_ICONS, BLOCK_LABEL, blockSectionId, DEFAULT_CONTENT, newBlock, sectionLabel, TEXT_FIELDS, TONE_LABEL,
+  type BlockIcon, type BlockKind, type BlockTone, type CardItem, type SiteBlock, type SiteContent,
+} from "@/config/site-content";
 import { usePointerReorder } from "@/components/site-editor/reorder";
 import { cn } from "@/lib/utils";
 import { inputCls } from "./settings/common";
@@ -15,12 +18,14 @@ const GROUPS: [string, string][] = [
   ["market", "ملخص السوق"],
   ["ideas", "التوصيات"],
   ["news", "الأخبار"],
+  ["articles", "المقالات"],
   ["telegram", "بطاقة تيليجرام"],
   ["why", "لماذا QFX"],
   ["broker", "الوسيط الشريك"],
   ["steps", "الخطوات"],
   ["join", "الانضمام"],
   ["footer", "التذييل"],
+  ["legal", "الصفحات القانونية (تظهر في الخصوصية والشروط)"],
 ];
 
 function move<T>(arr: T[], from: number, to: number): T[] {
@@ -142,7 +147,7 @@ export function SiteContentEditor({ initial, canEdit }: { initial: SiteContent; 
                 <GripVertical className="h-4 w-4" />
               </span>
               <span className="num w-5 text-xs text-muted-foreground">{i + 1}</span>
-              <span className={cn("font-semibold", !s.visible && "line-through")}>{HOME_SECTION_LABEL[s.id]}</span>
+              <span className={cn("font-semibold", !s.visible && "line-through")}>{sectionLabel(s.id, c.blocks)}</span>
               <span className="ms-auto flex items-center gap-1">
                 <button disabled={ro || i === 0} onClick={() => setC({ ...c, sections: move(c.sections, i, i - 1) })} className="rounded p-1.5 hover:bg-secondary disabled:opacity-30" aria-label="لأعلى">
                   <ArrowUp className="h-4 w-4" />
@@ -162,6 +167,96 @@ export function SiteContentEditor({ initial, canEdit }: { initial: SiteContent; 
             </li>
           ))}
         </ul>
+      </Section>
+
+      <Section
+        id="blocks"
+        title="🧱 الكتل المخصصة"
+        description="أضف أقساماً جديدة للصفحة الرئيسية: نص حر، دعوة لإجراء بزر، شريط ملوّن، أو بطاقات. الكتلة الجديدة تظهر في آخر الصفحة ويمكنك سحبها لأي مكان من القائمة أعلاه."
+      >
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(Object.keys(BLOCK_LABEL) as BlockKind[]).map((k) => (
+            <Button
+              key={k}
+              size="sm"
+              variant="outline"
+              disabled={ro || c.blocks.length >= 20}
+              onClick={() => {
+                const b = newBlock(k);
+                setC({ ...c, blocks: [...c.blocks, b], sections: [...c.sections, { id: blockSectionId(b.id), visible: true }] });
+              }}
+            >
+              <Plus className="h-4 w-4" /> {BLOCK_LABEL[k]}
+            </Button>
+          ))}
+        </div>
+        {c.blocks.length === 0 && <p className="text-sm text-muted-foreground">لا توجد كتل مخصصة بعد.</p>}
+        <div className="space-y-4">
+          {c.blocks.map((b, bi) => {
+            const setB = (patch: Partial<SiteBlock>) => setC({ ...c, blocks: c.blocks.map((x, j) => (j === bi ? { ...x, ...patch } : x)) });
+            return (
+              <div key={b.id} className="rounded-lg border border-border p-4">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">{BLOCK_LABEL[b.kind]}</span>
+                  <select className={cn(inputCls, "h-8 w-auto")} value={b.tone} disabled={ro} onChange={(e) => setB({ tone: e.target.value as BlockTone })}>
+                    {(Object.keys(TONE_LABEL) as BlockTone[]).map((t) => (
+                      <option key={t} value={t}>{TONE_LABEL[t]}</option>
+                    ))}
+                  </select>
+                  <button
+                    disabled={ro}
+                    onClick={() => confirm("حذف هذه الكتلة؟") && setC({ ...c, blocks: c.blocks.filter((x) => x.id !== b.id), sections: c.sections.filter((x) => x.id !== blockSectionId(b.id)) })}
+                    className="ms-auto rounded p-1.5 text-down hover:bg-secondary disabled:opacity-30"
+                    aria-label="حذف الكتلة"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {b.kind !== "banner" && <input className={inputCls} placeholder="العنوان" value={b.title} disabled={ro} onChange={(e) => setB({ title: e.target.value })} />}
+                  {(b.kind === "cta" || b.kind === "banner") && (
+                    <input className={inputCls} dir="ltr" placeholder="الرابط: /#join أو https://..." value={b.href} disabled={ro} onChange={(e) => setB({ href: e.target.value })} />
+                  )}
+                  <textarea
+                    className={cn(inputCls, "h-auto min-h-[64px] py-2 md:col-span-2")}
+                    placeholder={b.kind === "banner" ? "نص الشريط" : "النص"}
+                    value={b.text}
+                    disabled={ro}
+                    onChange={(e) => setB({ text: e.target.value })}
+                  />
+                  {b.kind === "cta" && <input className={inputCls} placeholder="نص الزر" value={b.button} disabled={ro} onChange={(e) => setB({ button: e.target.value })} />}
+                </div>
+                {b.kind === "cards" && (
+                  <div className="mt-3 space-y-2">
+                    {b.items.map((it, k) => {
+                      const setI = (p: Partial<CardItem>) => setB({ items: b.items.map((x, j) => (j === k ? { ...x, ...p } : x)) });
+                      return (
+                        <div key={k} className="grid gap-2 rounded-md bg-secondary/50 p-2 md:grid-cols-[110px_1fr_1.4fr_1fr_auto]">
+                          <select className={cn(inputCls, "h-9")} value={it.icon} disabled={ro} onChange={(e) => setI({ icon: e.target.value as BlockIcon })}>
+                            {BLOCK_ICONS.map((ic) => (
+                              <option key={ic} value={ic}>{ic}</option>
+                            ))}
+                          </select>
+                          <input className={cn(inputCls, "h-9")} placeholder="عنوان البطاقة" value={it.title} disabled={ro} onChange={(e) => setI({ title: e.target.value })} />
+                          <input className={cn(inputCls, "h-9")} placeholder="وصف" value={it.text} disabled={ro} onChange={(e) => setI({ text: e.target.value })} />
+                          <input className={cn(inputCls, "h-9")} dir="ltr" placeholder="رابط (اختياري)" value={it.href} disabled={ro} onChange={(e) => setI({ href: e.target.value })} />
+                          <button disabled={ro} onClick={() => setB({ items: b.items.filter((_, j) => j !== k) })} className="rounded p-1.5 text-down hover:bg-secondary" aria-label="حذف البطاقة">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {b.items.length < 6 && (
+                      <Button size="sm" variant="ghost" disabled={ro} onClick={() => setB({ items: [...b.items, { icon: "zap", title: "", text: "", href: "" }] })}>
+                        <Plus className="h-4 w-4" /> بطاقة
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </Section>
 
       <Section id="announcement" title="📣 شريط الإعلان" description="شريط ملوّن أعلى كل صفحات الموقع لعرض أو خبر مهم.">

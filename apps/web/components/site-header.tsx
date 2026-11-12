@@ -28,6 +28,7 @@ const NAV = [
   { href: "/markets", label: "الأسواق" },
   { href: "/signals", label: "التوصيات" },
   { href: "/feed", label: "الأفكار والأخبار" },
+  { href: "/blog", label: "المقالات" },
   { href: "/how-it-works", label: "كيف نعمل" },
 ];
 

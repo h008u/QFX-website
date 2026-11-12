@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { PageTitle } from "@/components/page-title";
 import { SignalsBoard } from "@/components/signals/signals-board";
 import { StatsCards } from "@/components/signals/stats-cards";
@@ -6,10 +7,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { getSignalStats, getSignals } from "@/lib/data";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "التوصيات ونسخ التداول",
   description: "التوصيات الحية والسجل التاريخي الكامل مع نسبة النجاح ومجموع النقاط.",
-};
+  path: "/signals",
+  keywords: "signals",
+});
 
 export const revalidate = 30;
 

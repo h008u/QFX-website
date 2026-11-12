@@ -1,6 +1,7 @@
 import { CLOSED_STATUSES, DIRECTION_LABEL, STATUS_LABEL, type Signal } from "@qfx/shared";
 import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
+import { ogImageUrl, pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import { AdvancedChart, type ChartLevel } from "@/components/market/advanced-chart";
 import { Gauge, ratingTone, RATING_LABEL } from "@/components/market/gauge";
@@ -19,7 +20,14 @@ export const revalidate = 1800;
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ s?: string }> }): Promise<Metadata> {
   const { s } = await searchParams;
   const m = marketOf(s ?? "XAUUSD");
-  return { title: m ? `${m.symbol} — ${m.name}` : "الأسواق", description: m ? `سعر ${m.name} الآن مع الشارت والتحليل الفني والتوصيات.` : undefined };
+  const sym = m?.symbol ?? "XAUUSD";
+  return pageMeta({
+    title: m ? `${m.symbol} — ${m.name}` : "الأسواق",
+    description: m ? `سعر ${m.name} (${m.symbol}) الآن مع الشارت التفاعلي والتحليل الفني والتوصيات.` : "أسعار الذهب والعملات والنفط والكريبتو مباشرة مع الشارتات والتحليل الفني.",
+    path: `/markets?s=${sym}`,
+    keywords: "markets",
+    image: ogImageUrl(m ? `${m.symbol} — ${m.name}` : "الأسواق", "الشارت والتحليل الفني والتوصيات"),
+  });
 }
 
 /** حالة السوق: الفوركس والسلع من الأحد 22:00 حتى الجمعة 22:00 (UTC)، والكريبتو دائماً */

@@ -48,6 +48,10 @@ export function LeadForm() {
       <Button type="submit" size="lg" disabled={pending} className="sm:col-span-2">
         {pending ? "جارٍ الإرسال..." : "أرسل طلب الانضمام"}
       </Button>
+      <p className="text-xs leading-5 text-muted-foreground sm:col-span-2">
+        نستخدم بياناتك فقط لتفعيل اشتراكك والتواصل معك بشأنه. التفاصيل في{" "}
+        <a href="/privacy" className="underline">سياسة الخصوصية</a>.
+      </p>
     </form>
   );
 }
