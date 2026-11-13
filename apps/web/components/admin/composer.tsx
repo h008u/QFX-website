@@ -139,7 +139,7 @@ export function Composer({
             <div className="mt-2 grid grid-cols-4 gap-2 rounded-md border border-border p-2 sm:grid-cols-6">
               {media.map((url) => (
                 <button key={url} onClick={() => { setPhoto(url); setShowLib(false); }} className="aspect-square overflow-hidden rounded border border-border hover:border-primary">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   <img src={url} alt="" className="h-full w-full object-cover" />
                 </button>
               ))}

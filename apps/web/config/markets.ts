@@ -33,3 +33,6 @@ export const MARKETS: MarketMeta[] = [
 ];
 
 export const marketOf = (symbol: string) => MARKETS.find((m) => m.symbol === symbol.toUpperCase());
+
+/** رابط صفحة الرمز الثابت (يُفهرس في محركات البحث بدل ?s=) */
+export const marketHref = (symbol: string, view?: "chart") => `/markets/${symbol.toLowerCase()}${view ? `?view=${view}` : ""}`;

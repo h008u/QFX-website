@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { pageMeta } from "@/lib/seo";
 import { PageTitle } from "@/components/page-title";
 import { SignalsBoard } from "@/components/signals/signals-board";
@@ -24,7 +25,11 @@ export default async function SignalsPage() {
       <PageTitle
         title="التوصيات ونسخ التداول"
         text="كل توصية تُنشر هنا وفي قناة التيليجرام في نفس اللحظة، ويُحدَّث سجلها تلقائياً عند تحقق الهدف أو ضرب الوقف."
-      />
+      >
+        <Link href="/performance" className={buttonVariants({ variant: "outline", size: "pill" })}>
+          سجل الأداء الكامل
+        </Link>
+      </PageTitle>
       <StatsCards stats={stats} />
       <SignalsBoard initial={signals} demo={demo} />
 

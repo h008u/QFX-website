@@ -19,6 +19,8 @@ export interface ReviewPost {
   score: number | null;
   reason: string | null;
   photo_url: string | null;
+  /** هل يُلحق نص التحذير بهذا المنشور عند النشر */
+  disclaimer?: boolean;
   createdLabel: string;
 }
 
@@ -63,7 +65,7 @@ export function ReviewItem({ post, signature, disclaimer, canEdit }: { post: Rev
           />
           {post.format === "html" && <p className="text-[11px] text-muted-foreground">منشور بصيغة HTML تيليجرام (b, i, a, code).</p>}
         </div>
-        <TelegramPreview body={body} format={post.format} photo={post.photo_url} signature={signature} disclaimer={null} />
+        <TelegramPreview body={body} format={post.format} photo={post.photo_url} signature={signature} disclaimer={post.disclaimer ? disclaimer : null} />
       </div>
       {canEdit && (
         <footer className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">

@@ -1,3 +1,4 @@
+import { Analytics } from "@/components/analytics";
 import { BottomNav } from "@/components/bottom-nav";
 import { ConsentBanner } from "@/components/consent/banner";
 import { ConsentProvider } from "@/components/consent/provider";
@@ -24,6 +25,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <BottomNav />
         <ThemePreviewBar />
         <ConsentBanner />
+        <Analytics />
       </div>
     </SiteEditorProvider>
     </ConsentProvider>

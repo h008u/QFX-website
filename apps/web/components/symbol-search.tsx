@@ -3,7 +3,7 @@
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CATEGORY_LABEL, MARKETS, type MarketCategory } from "@/config/markets";
+import { CATEGORY_LABEL, MARKETS, type MarketCategory, marketHref } from "@/config/markets";
 import { cn } from "@/lib/utils";
 import { SymbolLogo } from "./market/symbol-logo";
 
@@ -54,7 +54,7 @@ export function SymbolSearch() {
   if (!open) return null;
   const go = (s: string) => {
     setOpen(false);
-    router.push(`/markets?s=${s}`);
+    router.push(marketHref(s));
   };
 
   return (
@@ -74,8 +74,14 @@ export function SymbolSearch() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "ArrowDown") (e.preventDefault(), setI((x) => Math.min(x + 1, list.length - 1)));
-              if (e.key === "ArrowUp") (e.preventDefault(), setI((x) => Math.max(x - 1, 0)));
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setI((x) => Math.min(x + 1, list.length - 1));
+              }
+              if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setI((x) => Math.max(x - 1, 0));
+              }
               if (e.key === "Enter" && list[i]) go(list[i].symbol);
             }}
             placeholder="الرمز أو الاسم — مثلاً XAUUSD أو الذهب"

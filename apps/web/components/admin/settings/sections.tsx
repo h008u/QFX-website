@@ -372,7 +372,7 @@ export function GreetingsSection({ initial, media, canEdit }: { initial: BotSett
                         onClick={() => set({ ...v, images: { ...v.images, [t]: on ? v.images[t].filter((x) => x !== url) : [...v.images[t], url] } })}
                         className={cn("aspect-square overflow-hidden rounded border-2", on ? "border-primary" : "border-transparent opacity-50 hover:opacity-100")}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        { }
                         <img src={url} alt="" className="h-full w-full object-cover" />
                       </button>
                     );

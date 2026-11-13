@@ -30,7 +30,7 @@ export function TelegramPreview({
     <div className={cn("rounded-lg bg-[#dfe7ee] p-4 dark:bg-[#0e1621]", className)}>
       <div className="max-w-md overflow-hidden rounded-2xl rounded-ss-sm bg-white text-[14px] leading-6 text-[#000] shadow dark:bg-[#182533] dark:text-[#e9edef]">
         {photo && (
-          // eslint-disable-next-line @next/next/no-img-element
+           
           <img src={photo} alt="" className="max-h-64 w-full object-cover" />
         )}
         <div

@@ -1,5 +1,5 @@
 import "server-only";
-import { MARKETS } from "@/config/markets";
+import { MARKETS, marketHref } from "@/config/markets";
 import { getPublishedArticles } from "./articles";
 import { getSiteContent } from "./site-settings";
 import { KEYWORDS, SITE, siteUrl } from "./seo";
@@ -18,11 +18,12 @@ export async function buildLlms(full: boolean): Promise<string> {
   L.push("## الصفحات الرئيسية", "");
   L.push(`- [الأسواق والشارتات](${base}/markets): أسعار مباشرة، شارت شموع، تحليل فني (متوسطات ومذبذبات) — ${KEYWORDS.markets.join("، ")}`);
   L.push(`- [التوصيات وسجل الأداء](${base}/signals): كل توصية بالدخول والوقف والأهداف ونتيجتها، ونسبة النجاح — ${KEYWORDS.signals.join("، ")}`);
+  L.push(`- [سجل الأداء](${base}/performance): منحنى النقاط التراكمي، الأداء الشهري، نسبة النجاح لكل رمز، وأقصى تراجع`);
   L.push(`- [الأفكار والأخبار](${base}/feed): تحليلات يومية وأحداث المفكرة الاقتصادية`);
   L.push(`- [المقالات](${base}/blog): ${KEYWORDS.blog.join("، ")}`);
   L.push(`- [كيف نعمل والأسئلة الشائعة](${base}/how-it-works): خطوات فتح الحساب عبر الوكالة`);
   L.push(`- [إفصاح المخاطر](${base}/risk) • [الخصوصية](${base}/privacy) • [الشروط](${base}/terms)`, "");
-  L.push("## الأسواق المغطّاة", "", MARKETS.map((m) => `- [${m.symbol} — ${m.name}](${base}/markets?s=${m.symbol})`).join("\n"), "");
+  L.push("## الأسواق المغطّاة", "", MARKETS.map((m) => `- [${m.symbol} — ${m.name}](${base}${marketHref(m.symbol)})`).join("\n"), "");
   if (articles.length) {
     L.push("## المقالات", "");
     for (const a of articles) {

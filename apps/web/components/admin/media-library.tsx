@@ -79,7 +79,7 @@ export function MediaLibrary({ files, canEdit, demo }: { files: MediaFile[]; can
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {files.map((f) => (
           <figure key={f.name} className="group overflow-hidden rounded-lg border border-border bg-card">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <img src={f.url} alt="" className="aspect-square w-full object-cover" loading="lazy" />
             <figcaption className="flex items-center gap-1 p-2">
               <span className="num min-w-0 flex-1 truncate text-[11px] text-muted-foreground">{f.size ? `${Math.round(f.size / 1024)}KB` : f.name}</span>

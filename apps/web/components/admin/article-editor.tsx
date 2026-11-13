@@ -124,7 +124,7 @@ export function ArticleEditor({ initial, categories, media, siteUrl, canEdit }: 
               <datalist id="article-media">{media.map((m) => <option key={m} value={m} />)}</datalist>
             </label>
             {a.cover_url && /^https?:\/\//.test(a.cover_url) && (
-              // eslint-disable-next-line @next/next/no-img-element
+               
               <img src={a.cover_url} alt="" className="aspect-[1200/630] w-full rounded-md border border-border object-cover" />
             )}
           </div>

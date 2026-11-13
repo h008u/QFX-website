@@ -4,7 +4,9 @@ import { CandlestickChart, Compass, Lightbulb, Menu, Star, X } from "lucide-reac
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { LAST_SYMBOL_KEY } from "@/components/market/remember-symbol";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { marketHref } from "@/config/markets";
 import { siteConfig } from "@/config/site";
 import { useUser } from "@/lib/use-user";
 import { cn } from "@/lib/utils";
@@ -17,11 +19,20 @@ function Tabs() {
   const [menu, setMenu] = useState(false);
   const user = useUser();
   useEffect(() => setMenu(false), [pathname, view]);
+  // تبويب «الشارت» يفتح آخر رمز شاهده الزائر
+  const [lastSymbol, setLastSymbol] = useState("XAUUSD");
+  useEffect(() => {
+    try {
+      setLastSymbol(localStorage.getItem(LAST_SYMBOL_KEY) || "XAUUSD");
+    } catch {
+      /* التخزين غير متاح */
+    }
+  }, [pathname]);
   if (pathname.startsWith("/admin")) return null;
 
   const items = [
-    { href: "/markets?view=watchlist", label: "المراقبة", icon: Star, active: pathname === "/markets" && view !== "chart" },
-    { href: "/markets?view=chart", label: "الشارت", icon: CandlestickChart, active: pathname === "/markets" && view === "chart" },
+    { href: "/markets", label: "المراقبة", icon: Star, active: pathname === "/markets" || (pathname.startsWith("/markets/") && view !== "chart") },
+    { href: marketHref(lastSymbol, "chart"), label: "الشارت", icon: CandlestickChart, active: pathname.startsWith("/markets/") && view === "chart" },
     { href: "/", label: "استكشف", icon: Compass, active: pathname === "/" },
     { href: "/feed", label: "الأفكار", icon: Lightbulb, active: pathname.startsWith("/feed") || pathname.startsWith("/signals") },
   ];

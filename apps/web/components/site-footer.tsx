@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/site";
 import { Logo } from "./site-header";
 
 const COLS = [
-  { title: "المنصة", links: [["/markets", "الأسواق والشارت"], ["/signals", "التوصيات وسجل الأداء"], ["/feed", "الأفكار والأخبار"], ["/blog", "المقالات"]] },
+  { title: "المنصة", links: [["/markets", "الأسواق والشارت"], ["/signals", "التوصيات الحية"], ["/performance", "سجل الأداء"], ["/feed", "الأفكار والأخبار"], ["/blog", "المقالات"]] },
   { title: "الوكالة", links: [["/how-it-works", "كيف نعمل"], ["/#join", "افتح حسابك"], ["/how-it-works#faq", "الأسئلة الشائعة"], [siteConfig.telegramUrl, "قناة تيليجرام"]] },
   { title: "حسابك", links: [["/login", "تسجيل الدخول"], ["/account", "حسابي ورابط الإحالة"], ["/admin", "لوحة الإدارة"]] },
 ] as const;

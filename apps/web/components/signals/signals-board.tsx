@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { useRealtimeTable } from "@/lib/use-realtime";
 import { cn, formatDateTime, formatPrice } from "@/lib/utils";
 import { SignalCard, statusVariant } from "./signal-card";
+import { marketHref } from "@/config/markets";
 
 type Tab = "open" | "history";
 
@@ -78,7 +79,7 @@ export function SignalsBoard({ initial, demo }: { initial: Signal[]; demo: boole
                   <td>
                     <span className="flex items-center gap-2">
                       <SymbolLogo symbol={s.symbol} size={22} />
-                      <a href={`/markets?s=${s.symbol}`} className="num font-semibold hover:text-primary">{s.symbol}</a>
+                      <a href={marketHref(s.symbol)} className="num font-semibold hover:text-primary">{s.symbol}</a>
                     </span>
                   </td>
                   <td className={s.direction === "BUY" ? "text-success" : "text-destructive"}>{DIRECTION_LABEL[s.direction]}</td>

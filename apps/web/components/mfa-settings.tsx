@@ -76,7 +76,7 @@ export function MfaSettings({ required }: { required: boolean }) {
       {enroll && (
         <div className="space-y-3 rounded-lg border border-border p-4">
           <p className="text-sm">1. امسح الرمز بتطبيق المصادقة (Google Authenticator أو Authy):</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img src={enroll.qr} alt="QR" className="h-44 w-44 rounded bg-white p-2" />
           <p className="text-xs text-muted-foreground">
             أو أدخل المفتاح يدوياً: <code className="num select-all" dir="ltr">{enroll.secret}</code>

@@ -7,7 +7,7 @@ const dateFmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(
 /** غلاف المقال: الصورة إن وُجدت، وإلا لوحة بلون الثيم مع العنوان */
 export function ArticleCover({ a, big }: { a: Pick<Article, "cover_url" | "title" | "category">; big?: boolean }) {
   if (a.cover_url)
-    // eslint-disable-next-line @next/next/no-img-element
+     
     return <img src={a.cover_url} alt="" loading="lazy" className="aspect-[1200/630] w-full rounded-xl border border-border object-cover" />;
   return (
     <div className="glass-card relative flex aspect-[1200/630] w-full flex-col justify-end overflow-hidden rounded-xl bg-panel p-5 text-panel-foreground">

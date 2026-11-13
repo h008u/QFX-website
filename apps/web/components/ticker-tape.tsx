@@ -2,6 +2,7 @@ import Link from "next/link";
 import { fmtPrice } from "@/components/market/price";
 import { getMarkets } from "@/lib/market-data";
 import { cn } from "@/lib/utils";
+import { marketHref } from "@/config/markets";
 
 /** شريط أسعار متحرك أعلى الموقع (يظهر في ثيمات المؤسسي والطرفية والذهبي) */
 export async function TickerTape() {
@@ -11,7 +12,7 @@ export async function TickerTape() {
     <ul className="flex shrink-0 items-center gap-8 pe-8" aria-hidden={hidden}>
       {items.map((i) => (
         <li key={i.symbol}>
-          <Link href={`/markets?s=${i.symbol}`} className="num flex items-center gap-2 text-[12.5px] hover:opacity-80" tabIndex={hidden ? -1 : undefined}>
+          <Link href={marketHref(i.symbol)} className="num flex items-center gap-2 text-[12.5px] hover:opacity-80" tabIndex={hidden ? -1 : undefined}>
             <b className="font-semibold">{i.symbol}</b>
             <span className="opacity-80">{fmtPrice(i.last, i.digits)}</span>
             <span className={cn("font-semibold", i.pct >= 0 ? "text-up" : "text-down")}>

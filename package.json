@@ -12,7 +12,8 @@
     "dev:bot": "npm run dev -w @qfx/bot",
     "build": "npm run build -w @qfx/bot && npm run build -w @qfx/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint -w @qfx/web"
   },
   "engines": {
     "node": ">=20"

@@ -34,7 +34,9 @@ export function sanitizeRichHtml(html: string | null | undefined): string {
 
 /** نص خام من HTML (للمقتطف والوصف وحساب مدة القراءة) */
 export function htmlToText(html: string): string {
-  return sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} }).replace(/\s+/g, " ").trim();
+  // مسافة بعد نهاية كل كتلة حتى لا تلتصق آخر كلمة في فقرة بأول كلمة في التالية
+  const spaced = html.replace(/<\/(p|h[1-6]|li|blockquote|div|pre|tr|td|th|figcaption)>|<br\s*\/?>/gi, "$& ");
+  return sanitizeHtml(spaced, { allowedTags: [], allowedAttributes: {} }).replace(/\s+/g, " ").trim();
 }
 
 export function readingMinutes(html: string): number {

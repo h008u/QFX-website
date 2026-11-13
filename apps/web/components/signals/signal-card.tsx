@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CommentThread } from "@/components/community/comment-thread";
 import { SymbolLogo } from "@/components/market/symbol-logo";
 import { cn, formatPrice, timeAgo } from "@/lib/utils";
+import { marketHref } from "@/config/markets";
 
 export function statusVariant(status: Signal["status"]) {
   switch (status) {
@@ -51,7 +52,7 @@ export function SignalCard({ signal, withComments = false }: { signal: Signal; w
       <div className="flex items-center gap-3">
         <SymbolLogo symbol={signal.symbol} size={36} />
         <div className="min-w-0 flex-1">
-          <Link href={`/markets?s=${signal.symbol}`} className="num text-[17px] font-bold hover:text-primary">
+          <Link href={marketHref(signal.symbol)} className="num text-[17px] font-bold hover:text-primary">
             {signal.symbol}
           </Link>
           <p className="text-xs text-muted-foreground">

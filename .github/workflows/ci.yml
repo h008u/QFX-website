@@ -4,6 +4,11 @@ on:
   push:
   pull_request:
 
+# إلغاء التشغيل الأقدم على نفس الفرع عند دفع جديد
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -14,9 +19,15 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests (shared, bot, web)
+        run: npm test
+      - name: Build
+        # الخطوط مستضافة ذاتياً — البناء لا يحتاج الوصول لخطوط Google
+        run: npm run build
 
   database:
     runs-on: ubuntu-latest

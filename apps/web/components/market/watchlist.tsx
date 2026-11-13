@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Change, fmtPrice } from "./price";
 import { SymbolLogo } from "./symbol-logo";
+import { marketHref } from "@/config/markets";
 
 export interface WatchItem {
   symbol: string;
@@ -26,7 +27,7 @@ export function WatchlistPanel({ items, active }: { items: WatchItem[]; active?:
         {items.map((i) => (
           <li key={i.symbol}>
             <Link
-              href={`/markets?s=${i.symbol}`}
+              href={marketHref(i.symbol)}
               className={cn("grid grid-cols-[1fr_auto_auto] items-center gap-x-3 px-3 py-2 text-[13px] hover:bg-secondary", i.symbol === active && "bg-primary/10")}
             >
               <span className="flex min-w-0 items-center gap-2">
@@ -49,7 +50,7 @@ export function WatchlistMobile({ items }: { items: WatchItem[] }) {
     <ul className="divide-y divide-border">
       {items.map((i) => (
         <li key={i.symbol}>
-          <Link href={`/markets?s=${i.symbol}`} className="flex items-center gap-3 px-4 py-3 active:bg-secondary">
+          <Link href={marketHref(i.symbol)} className="flex items-center gap-3 px-4 py-3 active:bg-secondary">
             <SymbolLogo symbol={i.symbol} size={38} />
             <span className="min-w-0 flex-1">
               <span className="num block text-[16px] font-bold">{i.symbol}</span>

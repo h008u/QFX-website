@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn, timeAgo } from "@/lib/utils";
 import { fmtPrice } from "./price";
 import { SymbolLogo } from "./symbol-logo";
+import { marketHref } from "@/config/markets";
 
 /** بطاقة توصية بأسلوب بطاقات "الأفكار": صورة شارت مصغرة + العنوان + الكاتب والوقت */
 export function IdeaCard({ signal, spark, digits }: { signal: Signal; spark: number[]; digits: number }) {
@@ -19,7 +20,7 @@ export function IdeaCard({ signal, spark, digits }: { signal: Signal; spark: num
   const path = spark.map((v, i) => `${i ? "L" : "M"}${((i / (spark.length - 1)) * (W - 60)).toFixed(1)},${y(v).toFixed(1)}`).join("");
   const closed = !["open", "pending"].includes(signal.status);
   return (
-    <Link href={`/markets?s=${signal.symbol}`} className="group block">
+    <Link href={marketHref(signal.symbol)} className="group block">
       <div className="relative overflow-hidden rounded-xl border border-border bg-surface transition-shadow group-hover:shadow-lg">
         <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" preserveAspectRatio="none" aria-hidden>
           {[0.25, 0.5, 0.75].map((g) => (

@@ -1,4 +1,4 @@
-import { CLOSED_STATUSES, NEWS_KIND_LABEL } from "@qfx/shared";
+import { NEWS_KIND_LABEL } from "@qfx/shared";
 import { BadgeCheck, ChevronLeft, Zap } from "lucide-react";
 import { EditableSections, EditableText } from "@/components/site-editor/editor";
 import { WhyGrid } from "@/components/landing/why-grid";
@@ -98,6 +98,9 @@ export default async function HomePage() {
             </div>
           ))}
         </dl>
+        <Link href="/performance" className="mt-4 inline-flex w-fit items-center gap-1 text-sm font-semibold text-hero-muted underline-offset-4 hover:text-hero-foreground hover:underline">
+          شاهد سجل الأداء الكامل ←
+        </Link>
       </div>
     </section>
   );
