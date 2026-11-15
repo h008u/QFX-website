@@ -36,7 +36,7 @@ export default async function Mt5Page() {
   const trades = (sigs ?? []) as Signal[];
   const pub = process.env.BOT_PUBLIC_URL?.replace(/\/$/, "");
   const secret = process.env.MT5_SECRET;
-  const url = pub && secret ? `${pub}/mt5/${secret}` : null;
+  const url = pub && secret ? `${pub}/mt5` : null;
   const acc = st.account;
   const online = acc?.at && Date.now() - new Date(acc.at).getTime() < 5 * 60_000;
   const closed = trades.filter((t) => t.result_pips !== null);
@@ -74,15 +74,29 @@ export default async function Mt5Page() {
             </li>
             <li>في MT5: File ← Open Data Folder ← MQL5 ← Experts، والصق الملف. افتحه بـ MetaEditor واضغط Compile (F7).</li>
             <li>Tools ← Options ← Expert Advisors: فعّل <b>Allow WebRequest</b> وأضف رابط خدمة البوت (بدون المسار).</li>
-            <li>اسحب QFXBridge على أي شارت، والصق الرابط التالي في خانة <b>PanelUrl</b>:</li>
+            <li>اسحب QFXBridge على أي شارت، والصق الرابط في خانة <b>PanelUrl</b> والسر في خانة <b>PanelSecret</b>:</li>
           </ol>
-          <div className="mt-3 flex items-center gap-2">
-            <code className="num min-w-0 flex-1 truncate rounded-md border border-border bg-background px-3 py-2 text-xs" dir="ltr">
-              {ctx.role === "admin" ? url ?? "اضبط BOT_PUBLIC_URL و MT5_SECRET في الموقع والبوت" : "يظهر للمدير فقط"}
-            </code>
-            {url && ctx.role === "admin" && <CopyButton value={url} />}
-          </div>
-          <p className="mt-3 text-xs text-muted-foreground">الرابط سري: من يملكه يستطيع النشر في قناتك. لتغييره غيّر MT5_SECRET في البوت والموقع.</p>
+          {ctx.role === "admin" ? (
+            url ? (
+              <div className="mt-3 space-y-2">
+                {[["PanelUrl", url], ["PanelSecret", secret!]].map(([label, value]) => (
+                  <div key={label} className="flex items-center gap-2">
+                    <span className="w-24 shrink-0 text-xs text-muted-foreground" dir="ltr">{label}</span>
+                    <code className="num min-w-0 flex-1 truncate rounded-md border border-border bg-background px-3 py-2 text-xs" dir="ltr">{value}</code>
+                    <CopyButton value={value} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 rounded-md border border-border bg-background px-3 py-2 text-xs">اضبط BOT_PUBLIC_URL و MT5_SECRET في الموقع والبوت</p>
+            )
+          ) : (
+            <p className="mt-3 rounded-md border border-border bg-background px-3 py-2 text-xs">يظهر للمدير فقط</p>
+          )}
+          <p className="mt-3 text-xs text-muted-foreground">
+            السر يُرسل في ترويسة الطلب ولا يظهر في سجلات الخادم. من يملكه يستطيع النشر في قناتك؛ لتغييره غيّر MT5_SECRET في البوت والموقع.
+            الإعداد القديم (السر داخل الرابط <span dir="ltr">/mt5/السر</span>) ما زال يعمل.
+          </p>
         </Section>
         <Mt5Section initial={s.mt5} canEdit={canEdit(ctx.role)} />
       </div>

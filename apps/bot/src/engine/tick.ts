@@ -118,7 +118,7 @@ async function releaseLock() {
   await db().from("task_runs").update({ last_run_at: null }).eq("task", "_tick_lock");
 }
 
-/** دورة المهام الآلية — تُستدعى كل 5 دقائق من خدمة cron خارجية (وتوقظ الخدمة المجانية) */
+/** دورة المهام الآلية — تُستدعى كل 5 دقائق من خدمة cron خارجية */
 export async function runTick(now = new Date(), only?: string[]) {
   if (!(await acquireLock(now))) return { skipped: "another tick is running" };
   try {

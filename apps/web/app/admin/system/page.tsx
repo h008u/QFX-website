@@ -65,7 +65,7 @@ export default async function SystemPage() {
       </div>
       {st?.memory && (
         <p className="num mb-6 text-xs text-muted-foreground">
-          ذاكرة الخدمة: {st.memory.rss_mb}MB • تعمل منذ {Math.round(st.memory.uptime_s / 60)} دقيقة (الخطة المجانية تنام بعد 15 دقيقة بدون طلبات)
+          ذاكرة الخدمة: {st.memory.rss_mb}MB • تعمل منذ {Math.round(st.memory.uptime_s / 60)} دقيقة (على Vercel تبدأ نسخة جديدة عند الحاجة، فهذا الرقم يُصفَّر كثيراً وهو طبيعي)
         </p>
       )}
       <Section title="المهام الآلية">

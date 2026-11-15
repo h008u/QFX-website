@@ -66,7 +66,7 @@ export function createApp() {
     return c.json({ ok: false, error: "internal_error" }, 500);
   });
 
-  // فحص الصحة — تستخدمه Render/Koyeb ومهام الإيقاظ
+  // فحص الصحة — تستخدمه مهام المراقبة وسير عمل bot-tick
   app.get("/", (c) => c.json({ ok: true, service: "qfx-bot" }));
   app.get("/health", (c) => c.json({ ok: true, time: new Date().toISOString() }));
 
@@ -127,16 +127,19 @@ export function createApp() {
   });
 
   // ===== جسر MT5 (إضافة QFXBridge.mq5) =====
-  // الرابط: POST {PUBLIC_URL}/mt5/{MT5_SECRET} — الإضافة ترسل JSON لكل حدث بالحساب
-  app.post("/mt5/:secret", async (c) => {
+  // الأفضل: POST {PUBLIC_URL}/mt5 مع ترويسة X-QFX-Secret (السر لا يظهر في سجلات الطلبات).
+  // للتوافق مع الإعداد القديم: POST {PUBLIC_URL}/mt5/{MT5_SECRET}
+  const mt5Handler = async (c: Context, given: string) => {
     const secret = process.env.MT5_SECRET ?? "";
-    if (!secret || !safeEqual(c.req.param("secret"), secret)) return c.json({ ok: false, error: "unauthorized" }, 401);
+    if (!secret || !safeEqual(given, secret)) return c.json({ ok: false, error: "unauthorized" }, 401);
     const e = (await c.req.json().catch(() => null)) as Mt5Event | null;
     if (!e?.type) return c.json({ ok: false, error: "bad_json" }, 400);
     if (e.type === "ping") return c.json({ ok: true, pong: true });
     const r = await handleMt5Event(e, await loadSettings());
     return c.json(r);
-  });
+  };
+  app.post("/mt5", (c) => mt5Handler(c, c.req.header("X-QFX-Secret") ?? ""));
+  app.post("/mt5/:secret", (c) => mt5Handler(c, c.req.param("secret")));
 
   // ===== واجهة API الخاصة (لوحة التحكم + المهام الدورية) =====
   const api = new Hono();
@@ -181,7 +184,7 @@ export function createApp() {
   });
 
   // ===== المهام الآلية =====
-  // تُستدعى كل 5 دقائق (cron-job.org / GitHub Actions) — توقظ الخدمة المجانية وتشغّل المستحق
+  // تُستدعى كل 5 دقائق (cron-job.org / GitHub Actions) وتشغّل المستحق
   const tick = async (c: Context) => {
     const body = (await c.req.json().catch(() => ({}))) as { only?: string[] };
     return c.json({ ok: true, result: await runTick(new Date(), body.only) });
