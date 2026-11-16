@@ -28,6 +28,26 @@ jobs:
       - name: Build
         # الخطوط مستضافة ذاتياً — البناء لا يحتاج الوصول لخطوط Google
         run: npm run build
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - name: E2E tests (web, demo mode)
+        run: npm run e2e -w @qfx/web
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+      - name: Vercel build check (bot)
+        # يتأكد أن دالة البوت تُبنى بنفس طريقة Vercel دون الحاجة لحساب أو نشر
+        working-directory: apps/bot
+        run: |
+          mkdir -p .vercel
+          echo '{"projectId":"ci","orgId":"ci","settings":{"framework":null}}' > .vercel/project.json
+          npx --yes vercel@65 build --yes
+          node --input-type=module -e "const m = await import('./.vercel/output/functions/api/index.func/apps/bot/api/index.js'); if (typeof m.POST !== 'function') process.exit(1)"
 
   database:
     runs-on: ubuntu-latest

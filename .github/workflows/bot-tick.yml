@@ -1,7 +1,7 @@
-# يوقظ خدمة البوت المجانية ويشغّل دورة المهام (الأخبار، الأجندة، التنبيهات، التحيات، المجدول).
+# يشغّل دورة المهام (الأخبار، الأجندة، التنبيهات، التحيات، المجدول).
 # GitHub يؤخّر المهام المجدولة أحياناً؛ للدقة استخدم cron-job.org كل 5 دقائق بنفس الطلب.
 # أضف في Settings → Secrets and variables → Actions:
-#   BOT_PUBLIC_URL (مثل https://qfx-bot.onrender.com) و BOT_API_KEY
+#   BOT_PUBLIC_URL (مثل https://qfx-bot.vercel.app) و BOT_API_KEY
 name: Bot tick
 
 on:
@@ -23,7 +23,7 @@ jobs:
             echo "Secrets not configured yet — skipping."
             exit 0
           fi
-          # الطلب الأول يوقظ الخدمة إن كانت نائمة
+          # فحص سريع أن الخدمة تعمل قبل تشغيل الدورة
           curl -fsS --retry 3 --retry-delay 20 --max-time 90 "$BOT_PUBLIC_URL/health"
           curl -fsS --retry 2 --retry-delay 10 --max-time 90 -X POST \
             -H "Authorization: Bearer $BOT_API_KEY" \

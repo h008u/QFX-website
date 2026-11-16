@@ -14,6 +14,7 @@
 #property strict
 
 input string PanelUrl         = "";   // الرابط من لوحة QFX (صفحة MT5)
+input string PanelSecret      = "";   // اختياري: السر يُرسل بترويسة X-QFX-Secret بدل وضعه في الرابط
 input int    HeartbeatSeconds = 60;   // كل كم ثانية ترسل حالة الحساب
 input string SymbolsFilter    = "";   // رموز مفصولة بفاصلة (فارغ = الكل)
 input long   MagicFilter      = -1;   // رقم Magic (‎-1 = الكل)
@@ -105,6 +106,8 @@ bool Post(string json)
    char data[];
    char result[];
    string headers = "Content-Type: application/json\r\n";
+   if(StringLen(PanelSecret) > 0)
+      headers += "X-QFX-Secret: " + PanelSecret + "\r\n";
    string resultHeaders;
    int len = StringToCharArray(json, data, 0, WHOLE_ARRAY, CP_UTF8);
    if(len > 0)

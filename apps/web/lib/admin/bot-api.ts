@@ -8,7 +8,7 @@ export interface BotResult<T = unknown> {
 
 export const botConfigured = () => Boolean(process.env.BOT_API_URL && process.env.BOT_API_KEY);
 
-/** يستدعي خدمة البوت (Render/Koyeb). الخدمة المجانية قد تكون نائمة فنعطيها مهلة طويلة */
+/** يستدعي خدمة البوت (Vercel). مهلة طويلة لأن دورة المهام قد تأخذ حتى دقيقة */
 export async function callBot<T = unknown>(path: string, method: "GET" | "POST" | "PATCH" = "POST", body?: unknown, timeoutMs = 60_000): Promise<BotResult<T>> {
   const url = process.env.BOT_API_URL?.replace(/\/$/, "");
   const key = process.env.BOT_API_KEY;
@@ -26,6 +26,6 @@ export async function callBot<T = unknown>(path: string, method: "GET" | "POST" 
     return { ok: true, data: json };
   } catch (e) {
     const timeout = e instanceof Error && e.name === "TimeoutError";
-    return { ok: false, error: timeout ? "انتهت المهلة — الخدمة قد تكون نائمة، أعد المحاولة بعد دقيقة" : "تعذّر الاتصال بخدمة البوت" };
+    return { ok: false, error: timeout ? "انتهت المهلة — أعد المحاولة بعد دقيقة" : "تعذّر الاتصال بخدمة البوت" };
   }
 }
