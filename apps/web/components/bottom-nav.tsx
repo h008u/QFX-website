@@ -31,9 +31,9 @@ function Tabs() {
   if (pathname.startsWith("/admin")) return null;
 
   const items = [
-    { href: "/", label: "استكشف", icon: Compass, active: pathname === "/" },
     { href: "/markets", label: "الأسواق", icon: Star, active: pathname === "/markets" || (pathname.startsWith("/markets/") && view !== "chart") },
     { href: marketHref(lastSymbol, "chart"), label: "الشارت", icon: CandlestickChart, active: pathname.startsWith("/markets/") && view === "chart" },
+    { href: "/", label: "استكشف", icon: Compass, active: pathname === "/" },
     { href: "/signals", label: "التوصيات", icon: Signal, active: pathname.startsWith("/signals") || pathname.startsWith("/performance") },
   ];
   const links: [string, string, LucideIcon][] = [
