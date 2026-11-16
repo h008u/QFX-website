@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ALLOW_ALL, CATEGORIES, CATEGORY_INFO, DENY_ALL, type Consent } from "@/lib/consent";
-import { cn } from "@/lib/utils";
 import { useConsent } from "./provider";
 
 /** شريط الموافقة: يظهر حتى يجيب الزائر، و«تخصيص» يفتح اختيار كل فئة. الرفض بنفس سهولة القبول */
@@ -79,24 +78,35 @@ export function ConsentBanner() {
     );
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(68px+env(safe-area-inset-bottom))] z-[90] mx-auto max-w-3xl rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-2xl md:bottom-4" role="region" aria-label="موافقة الكوكيز">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+    <div
+      className="fixed inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] z-[90] border-t border-border bg-card px-4 py-3 text-card-foreground shadow-[0_-8px_24px_rgba(0,0,0,0.08)] md:inset-x-3 md:bottom-4 md:mx-auto md:max-w-3xl md:rounded-2xl md:border md:p-4 md:shadow-2xl"
+      role="region"
+      aria-label="موافقة الكوكيز"
+    >
+      <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:gap-3">
         <Cookie className="hidden h-8 w-8 shrink-0 text-primary md:block" />
-        <p className="text-sm leading-6">
+        {/* نص مختصر على الجوال حتى لا يغطي الشريط محتوى الصفحة */}
+        <p className="text-[13px] leading-5 md:hidden">
+          نستخدم كوكيز ضرورية، وبموافقتك كوكي الإحالة.{" "}
+          <Link href="/cookies" className="font-semibold text-primary underline">
+            التفاصيل
+          </Link>
+        </p>
+        <p className="hidden text-sm leading-6 md:block">
           نستخدم كوكيز ضرورية لتشغيل الموقع، وبموافقتك كوكي لنسب الإحالة وأدوات خارجية. يمكنك تغيير اختيارك في أي وقت من{" "}
           <Link href="/cookies" className="font-semibold text-primary underline">
             سياسة الكوكيز
           </Link>
           .
         </p>
-        <div className={cn("flex shrink-0 flex-wrap gap-2")}>
-          <Button size="sm" onClick={() => save(ALLOW_ALL)}>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button size="sm" className="flex-1 md:flex-none" onClick={() => save(ALLOW_ALL)}>
             قبول الكل
           </Button>
-          <Button size="sm" variant="outline" onClick={() => save(DENY_ALL)}>
+          <Button size="sm" variant="outline" className="flex-1 md:flex-none" onClick={() => save(DENY_ALL)}>
             الضرورية فقط
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setCustom(true)}>
+          <Button size="sm" variant="ghost" className="px-2 md:px-3" onClick={() => setCustom(true)}>
             تخصيص
           </Button>
         </div>

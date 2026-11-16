@@ -11,7 +11,8 @@ export function WatchlistMobileFiltered({ items, categories }: { items: (WatchIt
   const tabs: [string, string][] = [["all", "الكل"], ...Object.entries(categories)];
   return (
     <>
-      <div className="scrollbar-none flex gap-2 overflow-x-auto px-4 pb-3">
+      {/* الفلاتر تبقى ظاهرة تحت الرأس أثناء التمرير */}
+      <div className="scrollbar-none sticky top-16 z-30 flex gap-2 overflow-x-auto bg-background/95 px-4 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/85">
         {tabs.map(([k, label]) => (
           <button
             key={k}

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { permanentRedirect } from "next/navigation";
 import { ratingTone, RATING_LABEL } from "@/components/market/gauge";
-import { Change, fmtPrice } from "@/components/market/price";
 import { Sparkline } from "@/components/market/sparkline";
 import { SymbolLogo } from "@/components/market/symbol-logo";
 import { WatchlistMobileFiltered } from "@/components/market/watchlist-filter";
@@ -13,8 +12,10 @@ import { getMarkets, technicals } from "@/lib/market-data";
 import { pageMeta } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { MobileSearchButton } from "./mobile-search";
+import { LiveChange, LivePrice } from "@/components/market/live-quotes";
+import { fmtPrice } from "@/components/market/price";
 
-export const revalidate = 1800;
+export const revalidate = 300;
 
 export const metadata: Metadata = pageMeta({
   title: "الأسواق — أسعار الذهب والعملات والنفط والكريبتو مباشرة",
@@ -51,9 +52,9 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
                 <div className="flex items-center gap-2.5">
                   <SymbolLogo symbol={x.meta.symbol} size={28} />
                   <span className="num font-bold group-hover:text-primary">{x.meta.symbol}</span>
-                  <Change pct={x.changePct} chip className="ms-auto text-xs" />
+                  <LiveChange symbol={x.meta.symbol} pct={x.changePct} chip className="ms-auto text-xs" />
                 </div>
-                <p className="num mt-3 text-xl font-bold">{fmtPrice(x.last, x.meta.digits)}</p>
+                <p className="num mt-3 text-xl font-bold"><LivePrice symbol={x.meta.symbol} value={x.last} digits={x.meta.digits} /></p>
                 <Sparkline values={x.candles.slice(-48).map((c) => c.close)} up={x.changePct >= 0} width={260} height={44} />
               </Link>
             ))}
@@ -91,8 +92,8 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
                             </span>
                           </Link>
                         </td>
-                        <td className="num text-end font-semibold">{fmtPrice(x.last, x.meta.digits)}</td>
-                        <td className="text-end"><Change pct={x.changePct} chip className="text-xs" /></td>
+                        <td className="num text-end font-semibold"><LivePrice symbol={x.meta.symbol} value={x.last} digits={x.meta.digits} /></td>
+                        <td className="text-end"><LiveChange symbol={x.meta.symbol} pct={x.changePct} chip className="text-xs" /></td>
                         <td className={cn("num text-end", x.change >= 0 ? "text-up" : "text-down")}>{x.change >= 0 ? "+" : ""}{fmtPrice(x.change, x.meta.digits)}</td>
                         <td className="num text-end text-muted-foreground">{fmtPrice(x.high24, x.meta.digits)}</td>
                         <td className="num text-end text-muted-foreground">{fmtPrice(x.low24, x.meta.digits)}</td>
@@ -105,7 +106,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
             </div>
           </section>
         ))}
-        {demo && <p className="text-xs text-muted-foreground">أسعار توضيحية — تظهر الأسعار الحقيقية بعد إضافة مفتاح البيانات.</p>}
+        {demo && <p className="text-xs text-muted-foreground">أسعار توضيحية — تعذّر الوصول لمصدر الأسعار مؤقتاً.</p>}
       </div>
 
       {/* ===================== الجوال: قائمة المراقبة ===================== */}

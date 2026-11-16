@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Change, fmtPrice } from "./price";
 import { SymbolLogo } from "./symbol-logo";
 import { marketHref } from "@/config/markets";
+import { LiveChange, LivePrice } from "./live-quotes";
 
 export interface WatchItem {
   symbol: string;
@@ -34,8 +34,8 @@ export function WatchlistPanel({ items, active }: { items: WatchItem[]; active?:
                 <SymbolLogo symbol={i.symbol} size={18} />
                 <span className="num truncate font-semibold">{i.symbol}</span>
               </span>
-              <span className="num text-end">{fmtPrice(i.last, i.digits)}</span>
-              <Change pct={i.changePct} className="w-14 text-end text-[13px]" />
+              <LivePrice symbol={i.symbol} value={i.last} digits={i.digits} className="num text-end" />
+              <LiveChange symbol={i.symbol} pct={i.changePct} className="w-14 text-end text-[13px]" />
             </Link>
           </li>
         ))}
@@ -57,8 +57,8 @@ export function WatchlistMobile({ items }: { items: WatchItem[] }) {
               <span className="block truncate text-[13px] text-muted-foreground">{i.name}</span>
             </span>
             <span className="flex flex-col items-end gap-1">
-              <span className="num text-[16px] font-semibold">{fmtPrice(i.last, i.digits)}</span>
-              <Change pct={i.changePct} chip />
+              <LivePrice symbol={i.symbol} value={i.last} digits={i.digits} className="num text-[16px] font-semibold" />
+              <LiveChange symbol={i.symbol} pct={i.changePct} chip />
             </span>
           </Link>
         </li>

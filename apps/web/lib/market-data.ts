@@ -1,14 +1,13 @@
 import "server-only";
 import { computeRows, type Bar } from "@qfx/shared";
+import { unstable_cache } from "next/cache";
 import { MARKETS, marketOf, type MarketMeta } from "@/config/markets";
+import {
+  binanceCandles, binancePrices, scaleCandles, spotMetal, twelveDataCandles, withLivePrice, yahooCandles, yahooPrices,
+  type Candle,
+} from "@/lib/price-sources";
 
-export interface Candle {
-  time: number; // UTC seconds
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-}
+export type { Candle };
 
 export interface MarketSeries {
   meta: MarketMeta;
@@ -22,10 +21,20 @@ export interface MarketSeries {
   demo: boolean;
 }
 
+export interface LiveQuote {
+  symbol: string;
+  last: number;
+  change: number;
+  changePct: number;
+}
+
 const HOUR = 3600;
 const COUNT = 500; // ~3 أسابيع من شموع الساعة
+/** مدة تخزين الشموع وآخر الأسعار (ثوانٍ) */
+export const CANDLES_TTL = 300;
+export const PRICES_TTL = 30;
 
-/** شموع توضيحية ثابتة — فقط عند غياب مفتاح API أو فشل المصدر */
+/** شموع توضيحية ثابتة — فقط عند فشل كل المصادر */
 function demoCandles(m: MarketMeta, count = COUNT): Candle[] {
   let seed = [...m.symbol].reduce((a, c) => a * 31 + c.charCodeAt(0), 7) >>> 0;
   const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
@@ -44,21 +53,72 @@ function demoCandles(m: MarketMeta, count = COUNT): Candle[] {
   return out;
 }
 
-/** شموع الساعة من Twelve Data (الخطة المجانية) مع تخزين 30 دقيقة */
-async function fetchCandles(m: MarketMeta, key: string): Promise<Candle[] | null> {
-  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(m.provider)}&interval=1h&outputsize=${COUNT}&timezone=UTC&apikey=${key}`;
+/** آخر الأسعار الحية لكل الأسواق: طلب واحد لـ Yahoo وطلب لـ Binance وطلبان للمعادن الفورية */
+const loadLivePrices = unstable_cache(
+  async (): Promise<Record<string, number>> => {
+    const yahoo = MARKETS.filter((m) => m.yahoo && !m.spot).map((m) => m.yahoo!);
+    const pairs = MARKETS.filter((m) => m.binance).map((m) => m.binance!);
+    const spots = MARKETS.filter((m) => m.spot);
+    const [y, b, ...s] = await Promise.allSettled([yahooPrices(yahoo), binancePrices(pairs), ...spots.map((m) => spotMetal(m.spot!))]);
+    const out: Record<string, number> = {};
+    for (const m of MARKETS) {
+      const v = m.spot
+        ? (() => { const r = s[spots.indexOf(m)]; return r.status === "fulfilled" ? r.value : undefined; })()
+        : m.binance
+          ? b.status === "fulfilled" ? b.value[m.binance] : undefined
+          : y.status === "fulfilled" ? y.value[m.yahoo!] : undefined;
+      if (v) out[m.symbol] = v;
+    }
+    return out; // فشل كامل = {} لمدة 30 ثانية فقط، والشموع المخزنة تبقى تعمل
+  },
+  ["qfx-live-prices-v1"],
+  { revalidate: PRICES_TTL },
+);
+
+async function livePrices(): Promise<Record<string, number>> {
   try {
-    const res = await fetch(url, { next: { revalidate: 1800 } });
-    const json = (await res.json()) as { status?: string; values?: Record<string, string>[] };
-    if (json.status !== "ok" || !json.values) return null;
-    return json.values
-      .map((v) => ({ time: Math.floor(Date.parse(`${v.datetime.replace(" ", "T")}Z`) / 1000), open: +v.open, high: +v.high, low: +v.low, close: +v.close }))
-      .filter((c) => Number.isFinite(c.time) && Number.isFinite(c.close))
-      .sort((a, b) => a.time - b.time);
+    return await loadLivePrices();
   } catch {
-    return null;
+    return {};
   }
 }
+
+/** شموع الساعة الحقيقية: Binance للكريبتو، Yahoo للباقي (مع تصحيح المعادن للسعر الفوري)، ثم Twelve Data إن وُجد مفتاح */
+const loadCandles = unstable_cache(
+  async (symbol: string): Promise<Candle[]> => {
+    const m = marketOf(symbol)!;
+    const errors: string[] = [];
+    if (m.binance) {
+      try {
+        return await binanceCandles(m.binance, COUNT);
+      } catch (e) {
+        errors.push(String(e));
+      }
+    }
+    if (m.yahoo) {
+      try {
+        const { candles, last } = await yahooCandles(m.yahoo);
+        if (!m.spot) return candles;
+        const spot = await spotMetal(m.spot).catch(() => null);
+        const ref = last ?? candles.at(-1)!.close;
+        return spot ? scaleCandles(candles, spot / ref) : candles;
+      } catch (e) {
+        errors.push(String(e));
+      }
+    }
+    const key = process.env.TWELVEDATA_API_KEY;
+    if (key) {
+      try {
+        return await twelveDataCandles(m.provider, key, COUNT);
+      } catch (e) {
+        errors.push(String(e));
+      }
+    }
+    throw new Error(`no candles for ${symbol}: ${errors.join("; ")}`);
+  },
+  ["qfx-candles-v1"],
+  { revalidate: CANDLES_TTL },
+);
 
 function toSeries(meta: MarketMeta, candles: Candle[], demo: boolean): MarketSeries {
   const last = candles.at(-1)?.close ?? 0;
@@ -77,17 +137,28 @@ function toSeries(meta: MarketMeta, candles: Candle[], demo: boolean): MarketSer
   };
 }
 
-export async function getSeries(symbol: string): Promise<MarketSeries | null> {
+export async function getSeries(symbol: string, prices?: Record<string, number>): Promise<MarketSeries | null> {
   const meta = marketOf(symbol);
   if (!meta) return null;
-  const key = process.env.TWELVEDATA_API_KEY;
-  const real = key ? await fetchCandles(meta, key) : null;
-  return real?.length ? toSeries(meta, real, false) : toSeries(meta, demoCandles(meta), true);
+  const real = await loadCandles(meta.symbol).catch((e) => {
+    console.warn("[market-data]", String(e));
+    return null;
+  });
+  if (!real?.length) return toSeries(meta, demoCandles(meta), true);
+  const live = (prices ?? (await livePrices()))[meta.symbol];
+  return toSeries(meta, withLivePrice(real, live), false);
 }
 
 export async function getMarkets(symbols: string[] = MARKETS.map((m) => m.symbol)): Promise<{ series: MarketSeries[]; demo: boolean }> {
-  const series = (await Promise.all(symbols.map(getSeries))).filter(Boolean) as MarketSeries[];
+  const prices = await livePrices();
+  const series = (await Promise.all(symbols.map((s) => getSeries(s, prices)))).filter(Boolean) as MarketSeries[];
   return { series, demo: series.some((s) => s.demo) };
+}
+
+/** آخر سعر وتغيّر 24 ساعة لكل الأسواق (لتحديث الصفحات المفتوحة دون إعادة تحميل) */
+export async function getQuotes(): Promise<LiveQuote[]> {
+  const { series } = await getMarkets();
+  return series.filter((s) => !s.demo).map((s) => ({ symbol: s.meta.symbol, last: s.last, change: s.change, changePct: s.changePct }));
 }
 
 /** تجميع شموع الساعة لإطار أكبر (4 ساعات أو يوم) */

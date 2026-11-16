@@ -6,9 +6,9 @@ import { useMemo, useState } from "react";
 import { CATEGORY_LABEL, type MarketCategory } from "@/config/markets";
 import { cn } from "@/lib/utils";
 import { AdvancedChart, type ChartCandle } from "./advanced-chart";
-import { Change, fmtPrice } from "./price";
 import { Sparkline } from "./sparkline";
 import { SymbolLogo } from "./symbol-logo";
+import { LiveChange, LivePrice } from "./live-quotes";
 
 export interface SummaryItem {
   symbol: string;
@@ -68,8 +68,8 @@ export function MarketSummary({ items, title }: { items: SummaryItem[]; title?: 
             </div>
             <div className="mt-3 flex items-end justify-between gap-2">
               <div>
-                <p className="num text-lg font-bold">{fmtPrice(i.last, i.digits)}</p>
-                <Change pct={i.changePct} className="text-sm" />
+                <p className="num text-lg font-bold"><LivePrice symbol={i.symbol} value={i.last} digits={i.digits} /></p>
+                <LiveChange symbol={i.symbol} pct={i.changePct} className="text-sm" />
               </div>
               <Sparkline values={i.spark} up={i.changePct >= 0} width={84} height={34} />
             </div>
@@ -87,8 +87,8 @@ export function MarketSummary({ items, title }: { items: SummaryItem[]; title?: 
                 <p className="num text-sm text-muted-foreground">{current.symbol}</p>
               </div>
               <div className="ms-auto text-end">
-                <p className="num text-[28px] font-bold leading-none">{fmtPrice(current.last, current.digits)}</p>
-                <Change pct={current.changePct} abs={current.change} digits={current.digits} className="text-sm" />
+                <p className="num text-[28px] font-bold leading-none"><LivePrice symbol={current.symbol} value={current.last} digits={current.digits} /></p>
+                <LiveChange symbol={current.symbol} pct={current.changePct} abs={current.change} digits={current.digits} className="text-sm" />
               </div>
             </div>
             <AdvancedChart key={current.symbol} symbol={current.symbol} candles={current.candles} digits={current.digits} className="mt-3 h-[320px] md:h-[420px]" compactToolbar />
@@ -104,8 +104,8 @@ export function MarketSummary({ items, title }: { items: SummaryItem[]; title?: 
                   <span className="block truncate text-xs text-muted-foreground">{i.name}</span>
                 </span>
                 <span className="text-end">
-                  <span className="num block text-[15px] font-semibold">{fmtPrice(i.last, i.digits)}</span>
-                  <Change pct={i.changePct} className="text-xs" />
+                  <LivePrice symbol={i.symbol} value={i.last} digits={i.digits} className="num block text-[15px] font-semibold" />
+                  <LiveChange symbol={i.symbol} pct={i.changePct} className="text-xs" />
                 </span>
               </button>
             </li>

@@ -1,6 +1,6 @@
 "use client";
 
-import { CandlestickChart, Compass, Lightbulb, Menu, Star, X } from "lucide-react";
+import { BookOpen, CandlestickChart, ChevronLeft, CircleHelp, Compass, LineChart, Menu, Newspaper, Send, Signal, Star, UserRound, X, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -31,36 +31,49 @@ function Tabs() {
   if (pathname.startsWith("/admin")) return null;
 
   const items = [
-    { href: "/markets", label: "المراقبة", icon: Star, active: pathname === "/markets" || (pathname.startsWith("/markets/") && view !== "chart") },
-    { href: marketHref(lastSymbol, "chart"), label: "الشارت", icon: CandlestickChart, active: pathname.startsWith("/markets/") && view === "chart" },
     { href: "/", label: "استكشف", icon: Compass, active: pathname === "/" },
-    { href: "/feed", label: "الأفكار", icon: Lightbulb, active: pathname.startsWith("/feed") || pathname.startsWith("/signals") },
+    { href: "/markets", label: "الأسواق", icon: Star, active: pathname === "/markets" || (pathname.startsWith("/markets/") && view !== "chart") },
+    { href: marketHref(lastSymbol, "chart"), label: "الشارت", icon: CandlestickChart, active: pathname.startsWith("/markets/") && view === "chart" },
+    { href: "/signals", label: "التوصيات", icon: Signal, active: pathname.startsWith("/signals") || pathname.startsWith("/performance") },
+  ];
+  const links: [string, string, LucideIcon][] = [
+    ["/feed", "الأخبار والتحليلات", Newspaper],
+    ["/markets", "الأسواق", Star],
+    ["/performance", "سجل الأداء", LineChart],
+    ["/blog", "المقالات", BookOpen],
+    ["/how-it-works", "كيف نعمل", CircleHelp],
+    [user ? "/account" : "/login", user ? "حسابي" : "تسجيل الدخول", UserRound],
+    [siteConfig.telegramUrl, "قناة تيليجرام", Send],
   ];
 
   return (
     <>
       {menu && (
-        <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal>
+        <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal aria-label="القائمة">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMenu(false)} />
-          <div className="absolute inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] rounded-t-2xl bg-background p-4 shadow-2xl">
+          <div className="absolute inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] max-h-[75vh] overflow-y-auto rounded-t-2xl bg-background p-4 shadow-2xl">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-lg font-bold">القائمة</p>
               <button onClick={() => setMenu(false)} aria-label="إغلاق" className="rounded-full p-2 hover:bg-secondary">
                 <X className="h-5 w-5" />
               </button>
             </div>
-            {[
-              ["/signals", "التوصيات وسجل الأداء"],
-              ["/blog", "المقالات"],
-              ["/how-it-works", "كيف نعمل"],
-              ["/#join", "افتح حسابك"],
-              [user ? "/account" : "/login", user ? "حسابي" : "تسجيل الدخول"],
-              [siteConfig.telegramUrl, "قناة تيليجرام"],
-            ].map(([href, label]) => (
-              <Link key={label} href={href} className="block rounded-lg px-2 py-3 text-[16px] font-semibold hover:bg-secondary">
-                {label}
-              </Link>
-            ))}
+            <Link href="/#join" className="mb-2 flex items-center justify-between rounded-xl bg-primary px-4 py-3.5 text-[16px] font-bold text-primary-foreground">
+              افتح حسابك عبر الوكالة
+              <ChevronLeft className="h-5 w-5" />
+            </Link>
+            <ul className="grid grid-cols-2 gap-1">
+              {links.map(([href, label, Icon]) => (
+                <li key={label}>
+                  <Link href={href} className="flex items-center gap-3 rounded-lg px-2 py-3 text-[15px] font-semibold hover:bg-secondary">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-secondary text-primary">
+                      <Icon className="h-[18px] w-[18px]" />
+                    </span>
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
             <div className="theme-toggle mt-2 flex items-center justify-between border-t border-border px-2 pt-3 text-sm">
               الوضع الداكن
               <ThemeToggle />

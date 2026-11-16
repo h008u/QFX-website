@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { chartFont, chartPalette, useIsDark } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { fmtPrice } from "./price";
+import { useLiveQuote } from "./live-quotes";
 
 export interface ChartCandle {
   time: number;
@@ -149,6 +150,17 @@ export function AdvancedChart({
     chart.timeScale().fitContent();
     chart.timeScale().scrollToPosition(6, false);
   }, [data, kind, levels, digits, dark]);
+
+  // تحديث آخر شمعة بالسعر الحي دون إعادة رسم الشارت
+  const live = useLiveQuote(symbol)?.last;
+  useEffect(() => {
+    const s = seriesRef.current;
+    const lastBar = data.at(-1);
+    if (!s || !lastBar || !live || Math.abs(live / lastBar.close - 1) > 0.1) return;
+    const time = lastBar.time as UTCTimestamp;
+    if (kind === "candles" || kind === "bars") s.update({ time, open: lastBar.open, high: Math.max(lastBar.high, live), low: Math.min(lastBar.low, live), close: live });
+    else s.update({ time, value: live });
+  }, [live, data, kind]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
