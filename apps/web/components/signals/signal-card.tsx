@@ -2,6 +2,7 @@ import { ASSET_LABEL, DIRECTION_LABEL, STATUS_LABEL, riskReward, type Signal } f
 import Link from "next/link";
 import { CommentThread } from "@/components/community/comment-thread";
 import { SymbolLogo } from "@/components/market/symbol-logo";
+import { CopyLevelsButton } from "./copy-levels";
 import { cn, formatPrice, timeAgo } from "@/lib/utils";
 import { marketHref } from "@/config/markets";
 
@@ -47,6 +48,13 @@ export function SignalCard({ signal, withComments = false }: { signal: Signal; w
     take_profit_1: Number(signal.take_profit_1),
   });
   const tps = [signal.take_profit_2, signal.take_profit_3].filter((x) => x !== null && x !== undefined);
+  const levelsText = [
+    `${signal.symbol} ${DIRECTION_LABEL[signal.direction]}`,
+    `الدخول: ${formatPrice(signal.entry_price)}`,
+    `وقف الخسارة: ${formatPrice(signal.stop_loss)}`,
+    `الهدف 1: ${formatPrice(signal.take_profit_1)}`,
+    ...tps.map((x, i) => `الهدف ${i + 2}: ${formatPrice(x as number)}`),
+  ].join("\n");
   return (
     <article className="animate-fade-in rounded-xl border border-border p-4 transition-colors hover:border-input">
       <div className="flex items-center gap-3">
@@ -82,6 +90,7 @@ export function SignalCard({ signal, withComments = false }: { signal: Signal; w
             أهداف إضافية <span className="num text-up">{tps.map((x) => formatPrice(x as number)).join(" / ")}</span>
           </span>
         )}
+        {signal.result_pips === null && <CopyLevelsButton text={levelsText} className="ms-auto" />}
         {signal.result_pips !== null && (
           <span className={cn("num ms-auto font-bold", Number(signal.result_pips) >= 0 ? "text-up" : "text-down")}>
             {Number(signal.result_pips) > 0 ? "+" : ""}

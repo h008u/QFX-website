@@ -19,7 +19,7 @@ import { getNews, getSignalStats, getSignals } from "@/lib/data";
 import { getMarkets } from "@/lib/market-data";
 import { cn, timeAgo } from "@/lib/utils";
 
-export const revalidate = 1800;
+export const revalidate = 300;
 
 export const metadata: Metadata = { ...pageMeta({ title: siteConfig.title, description: siteConfig.description, path: "/", keywords: "home" }), title: { absolute: siteConfig.title } };
 
@@ -66,17 +66,17 @@ export default async function HomePage() {
         <path d="M0 520 L120 470 L220 495 L340 400 L460 430 L580 330 L700 360 L820 250 L940 290 L1060 190 L1180 220 L1300 120 L1440 150 L1440 640 L0 640Z" fill="url(#hero-g)" />
         <path d="M0 520 L120 470 L220 495 L340 400 L460 430 L580 330 L700 360 L820 250 L940 290 L1060 190 L1180 220 L1300 120 L1440 150" fill="none" stroke="currentColor" strokeWidth="2.5" />
       </svg>
-      <div className="container relative flex min-h-[560px] flex-col justify-center py-20 md:min-h-[640px]">
-        <h1 className="max-w-4xl text-[52px] font-black leading-[1.12] tracking-tight md:text-[88px]">
+      <div className="container relative flex flex-col justify-center pb-10 pt-8 md:min-h-[640px] md:py-20">
+        <h1 className="max-w-4xl text-[44px] font-black leading-[1.12] tracking-tight sm:text-[52px] md:text-[88px]">
           <EditableText k="hero.title1" />
           <br />
           <EditableText k="hero.title2" className="brand-accent" />
         </h1>
-        <EditableText as="p" k="hero.subtitle" multiline className="mt-6 block max-w-xl text-lg leading-8 text-hero-muted md:text-xl" />
-        <div className="mt-10">
+        <EditableText as="p" k="hero.subtitle" multiline className="mt-4 block max-w-xl text-base leading-7 text-hero-muted md:mt-6 md:text-xl md:leading-8" />
+        <div className="mt-6 md:mt-10">
           <HeroSearch />
         </div>
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-3 md:mt-6">
           <a href={siteConfig.referralUrl} target="_blank" rel="noopener sponsored" className={buttonVariants({ size: "pill" })}>
             <EditableText k="hero.cta1" />
           </a>
@@ -84,7 +84,7 @@ export default async function HomePage() {
             <EditableText k="hero.cta2" />
           </Link>
         </div>
-        <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-hero-foreground/15 pt-6">
+        <dl className="mt-6 grid max-w-2xl grid-cols-3 gap-4 border-t border-hero-foreground/15 pt-4 md:mt-14 md:gap-6 md:pt-6">
           {[
             [stats.win_rate === null ? "—" : `${stats.win_rate}%`, "hero.stat1"],
             [`${stats.total_pips > 0 ? "+" : ""}${stats.total_pips}`, "hero.stat2"],
@@ -94,7 +94,7 @@ export default async function HomePage() {
               <dt className="text-xs text-hero-muted md:text-sm">
                 <EditableText k={k} />
               </dt>
-              <dd className="num mt-1 text-2xl font-bold md:text-3xl">{v}</dd>
+              <dd className="num mt-1 text-xl font-bold md:text-3xl">{v}</dd>
             </div>
           ))}
         </dl>
@@ -108,14 +108,14 @@ export default async function HomePage() {
   const market = (
     <div className="container pt-14 md:pt-20">
       <MarketSummary items={items} title={<EditableText k="market.title" />} />
-      {demo && <p className="mt-3 text-xs text-muted-foreground">أسعار توضيحية — تظهر الأسعار الحقيقية بعد إضافة مفتاح البيانات.</p>}
+      {demo && <p className="mt-3 text-xs text-muted-foreground">أسعار توضيحية — تعذّر الوصول لمصدر الأسعار مؤقتاً.</p>}
     </div>
   );
 
   const ideasNode = (
     <section className="container pt-16 md:pt-24">
       <SectionTitle href="/signals" k="ideas.title" />
-      <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 lg:grid-cols-3">
+      <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 sm:mx-0 sm:scroll-px-0 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 lg:grid-cols-3">
         {ideas.map((s) => {
           const m = bySym.get(s.symbol);
           return (

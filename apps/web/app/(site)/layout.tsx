@@ -1,4 +1,5 @@
 import { Analytics } from "@/components/analytics";
+import { PwaRegister } from "@/components/pwa-register";
 import { BottomNav } from "@/components/bottom-nav";
 import { ConsentBanner } from "@/components/consent/banner";
 import { ConsentProvider } from "@/components/consent/provider";
@@ -9,11 +10,13 @@ import { ThemePreviewBar } from "@/components/theme-preview-bar";
 import { TickerTape } from "@/components/ticker-tape";
 import { JsonLd, organizationLd, websiteLd } from "@/lib/jsonld";
 import { getSiteContent } from "@/lib/site-settings";
+import { LiveQuotesProvider } from "@/components/market/live-quotes";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const content = await getSiteContent();
   return (
     <ConsentProvider>
+    <LiveQuotesProvider>
     <SiteEditorProvider initial={content}>
       <div className="pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
         <JsonLd data={[organizationLd(), websiteLd()]} />
@@ -26,8 +29,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <ThemePreviewBar />
         <ConsentBanner />
         <Analytics />
+        <PwaRegister />
       </div>
     </SiteEditorProvider>
+    </LiveQuotesProvider>
     </ConsentProvider>
   );
 }

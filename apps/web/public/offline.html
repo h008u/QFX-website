@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>لا يوجد اتصال | QFX</title>
+<style>
+  :root { color-scheme: light dark; --bg: #F7F7F2; --fg: #0A1D42; --muted: #5b6475; --gold: #C9A13F; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0A1428; --fg: #E6EAF2; --muted: #9aa3b5; } }
+  body { margin: 0; min-height: 100dvh; display: grid; place-items: center; background: var(--bg); color: var(--fg); font-family: system-ui, "Segoe UI", Tahoma, sans-serif; text-align: center; padding: 24px; box-sizing: border-box; }
+  img { width: 72px; height: 72px; }
+  h1 { font-size: 22px; margin: 20px 0 8px; }
+  p { color: var(--muted); line-height: 1.8; margin: 0 0 24px; }
+  button { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 12px 28px; background: var(--fg); color: var(--bg); cursor: pointer; }
+</style>
+</head>
+<body>
+  <main>
+    <img src="/icon-192.png" alt="QFX">
+    <h1>لا يوجد اتصال بالإنترنت</h1>
+    <p>تحقق من اتصالك ثم أعد المحاولة.<br>الأسعار والتوصيات تحتاج اتصالاً لتظهر محدّثة.</p>
+    <button onclick="location.reload()">إعادة المحاولة</button>
+  </main>
+</body>
+</html>

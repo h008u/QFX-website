@@ -6,7 +6,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdvancedChart, type ChartLevel } from "@/components/market/advanced-chart";
 import { Gauge, ratingTone, RATING_LABEL } from "@/components/market/gauge";
-import { Change, fmtPrice } from "@/components/market/price";
+import { fmtPrice } from "@/components/market/price";
+import { LiveChange, LivePrice } from "@/components/market/live-quotes";
 import { SymbolLogo } from "@/components/market/symbol-logo";
 import { WatchlistPanel, type WatchItem } from "@/components/market/watchlist";
 import { RememberSymbol } from "@/components/market/remember-symbol";
@@ -18,7 +19,7 @@ import { getMarkets, technicals, type MarketSeries } from "@/lib/market-data";
 import { cn, timeAgo } from "@/lib/utils";
 import { MobileSearchButton } from "../mobile-search";
 
-export const revalidate = 1800;
+export const revalidate = 300;
 
 type Props = { params: Promise<{ symbol: string }>; searchParams: Promise<{ view?: string }> };
 
@@ -102,9 +103,9 @@ export default async function SymbolPage({ params, searchParams }: Props) {
   const priceBlock = (big: boolean) => (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-3">
-        <span className={cn("num font-bold leading-none", big ? "text-[40px] md:text-[44px]" : "text-[28px]")}>{fmtPrice(cur.last, meta.digits)}</span>
+        <span className={cn("num font-bold leading-none", big ? "text-[40px] md:text-[44px]" : "text-[28px]")}><LivePrice symbol={meta.symbol} value={cur.last} digits={meta.digits} /></span>
         <span className="text-sm text-muted-foreground">USD</span>
-        <Change pct={cur.changePct} abs={cur.change} digits={meta.digits} className={big ? "text-lg" : "text-[15px]"} />
+        <LiveChange symbol={meta.symbol} pct={cur.changePct} abs={cur.change} digits={meta.digits} className={big ? "text-lg" : "text-[15px]"} />
       </div>
       <p className="mt-2 flex items-center gap-1.5 text-[13px] text-muted-foreground">
         <span className={cn("h-2 w-2 rounded-full", open ? "bg-success" : "bg-muted-foreground")} />
@@ -159,7 +160,7 @@ export default async function SymbolPage({ params, searchParams }: Props) {
         <Stat label="الافتتاح (24س)" value={fmtPrice(cur.open24, meta.digits)} />
         <Stat label="أعلى سعر (24س)" value={fmtPrice(cur.high24, meta.digits)} />
         <Stat label="أدنى سعر (24س)" value={fmtPrice(cur.low24, meta.digits)} />
-        <Stat label="التغير (24س)" value={<Change pct={cur.changePct} />} />
+        <Stat label="التغير (24س)" value={<LiveChange symbol={meta.symbol} pct={cur.changePct} />} />
         <Stat label="أدنى 3 أسابيع" value={fmtPrice(range3w.low, meta.digits)} />
         <Stat label="أعلى 3 أسابيع" value={fmtPrice(range3w.high, meta.digits)} />
         <Stat label="الملخص الفني" value={<span className={ratingTone(tech.summary.rating)}>{RATING_LABEL[tech.summary.rating]}</span>} />
@@ -259,8 +260,8 @@ export default async function SymbolPage({ params, searchParams }: Props) {
                         <span className="block truncate text-xs text-muted-foreground">{x.meta.name}</span>
                       </span>
                       <span className="text-end">
-                        <span className="num block text-sm font-semibold">{fmtPrice(x.last, x.meta.digits)}</span>
-                        <Change pct={x.changePct} className="text-xs" />
+                        <LivePrice symbol={x.meta.symbol} value={x.last} digits={x.meta.digits} className="num block text-sm font-semibold" />
+                        <LiveChange symbol={x.meta.symbol} pct={x.changePct} className="text-xs" />
                       </span>
                     </Link>
                   </li>
@@ -330,8 +331,8 @@ export default async function SymbolPage({ params, searchParams }: Props) {
             <div className="flex items-center gap-2 border-b border-border px-3 py-2">
               <SymbolLogo symbol={symbol} size={24} />
               <Link href={marketHref(symbol)} className="num font-bold">{symbol}</Link>
-              <span className="num text-[15px] font-semibold">{fmtPrice(cur.last, meta.digits)}</span>
-              <Change pct={cur.changePct} className="text-[13px]" />
+              <LivePrice symbol={meta.symbol} value={cur.last} digits={meta.digits} className="num text-[15px] font-semibold" />
+              <LiveChange symbol={meta.symbol} pct={cur.changePct} className="text-[13px]" />
               <MobileSearchButton className="ms-auto" />
             </div>
             <AdvancedChart symbol={symbol} candles={candles} digits={meta.digits} levels={levels} className="min-h-0 flex-1" compactToolbar />
@@ -345,7 +346,7 @@ export default async function SymbolPage({ params, searchParams }: Props) {
               <div className="mt-4">{priceBlock(false)}</div>
             </div>
             <div>
-              <AdvancedChart symbol={symbol} candles={candles} digits={meta.digits} levels={levels} className="h-[380px] border-y border-border" compactToolbar />
+              <AdvancedChart symbol={symbol} candles={candles} digits={meta.digits} levels={levels} className="h-[60dvh] min-h-[380px] border-y border-border" compactToolbar />
               <Link href={marketHref(symbol, "chart")} className="mx-4 mt-3 flex h-11 items-center justify-center rounded-lg bg-secondary text-[15px] font-semibold">
                 فتح الشارت بملء الشاشة
               </Link>

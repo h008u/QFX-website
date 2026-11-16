@@ -81,3 +81,24 @@ test("SEO endpoints respond", async ({ request }) => {
   const sitemap = await (await request.get("/sitemap.xml")).text();
   expect(sitemap).toContain("/markets/");
 });
+
+test("app manifest and offline page are served", async ({ request }) => {
+  const res = await request.get("/manifest.webmanifest");
+  expect(res.status()).toBe(200);
+  const m = await res.json();
+  expect(m.display).toBe("standalone");
+  expect(m.icons.map((i: { sizes: string }) => i.sizes)).toEqual(expect.arrayContaining(["192x192", "512x512"]));
+  expect((await request.get("/offline.html")).status()).toBe(200);
+  expect((await request.get("/icon-512.png")).status()).toBe(200);
+});
+
+test("quotes API returns a well-formed list", async ({ request }) => {
+  const res = await request.get("/api/quotes");
+  expect(res.status()).toBe(200);
+  const { quotes } = await res.json();
+  expect(Array.isArray(quotes)).toBe(true);
+  for (const q of quotes) {
+    expect(typeof q.symbol).toBe("string");
+    expect(q.last).toBeGreaterThan(0);
+  }
+});
